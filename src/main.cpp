@@ -4,7 +4,6 @@
 #include <lvgl.h>
 #include "ui.h"
 #include "actions.h"
-#include "lvgl_helpers.h" // Include lvgl_helpers.h
 #include <ostream>
 #include <iostream>
 
@@ -16,10 +15,6 @@ void setup() {
   Serial.println("Starting AmiPixel...");
 
   lv_init(); // Initialize LVGL
-
-  /* Initialize дисплей and input devices(Touch) - Use lvgl_driver_init from lvgl_helpers */
-  lvgl_driver_init();
-
   ui_init(); // Initialize your UI
 
   // --- Test Action Calls (for now) ---
