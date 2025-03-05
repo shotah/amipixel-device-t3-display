@@ -1,6 +1,6 @@
 # Makefile for AmiPixel PlatformIO Project
 
-PROJECT_ENV = T-Display-AMOLED # Default PlatformIO environment (adjust if needed)
+PROJECT_ENV = lilygo-t-display-s3    # Default PlatformIO environment (adjust if needed)
 PLATFORMIO_CMD = pio                 # Command for PlatformIO CLI (usually 'pio' or 'platformio')
 
 # --- Targets ---
