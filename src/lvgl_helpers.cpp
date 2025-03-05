@@ -8,7 +8,7 @@ TFT_eSPI *tft; // Keep TFT_eSPI object declaration
 // --- MOVE THESE GLOBAL DECLARATIONS OUTSIDE lvgl_driver_init() ---
 static lv_draw_buf_t draw_buf;
 static lv_color_t *buf;
-static lv_display_drv_t disp_drv; /*Descriptor of a display driver - Declare disp_drv globally */ // Renamed to lv_display_drv_t
+static lv_display_driver_t disp_drv; // Corrected type name to lv_display_driver_t
 
 
 /* Display flushing */
