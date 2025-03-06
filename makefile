@@ -1,5 +1,9 @@
 # Makefile for AmiPixel PlatformIO Project
 
+# Compiler and flags
+CC = g++
+CFLAGS = -Wall -Wextra -std=c++17
+
 PROJECT_ENV = T-Display-AMOLED       # Default PlatformIO environment (adjust if needed)
 TEST_ENV = test
 VIRTUAL_ENV = qemu_esp32
@@ -37,6 +41,14 @@ py-pio-install:
 	@echo "Python install of platformio starting"
 	python -m pip install -U platformio
 
+format:
+	@echo "Running clang-format on source files"
+	clang-format -i src/*.cpp src/*.h
+
+tidy:
+	@echo "Running clang-tidy on source files"
+	clang-tidy src/*.cpp -- -Iinclude
+
 help:
 	@echo "Makefile for AmiPixel PlatformIO Project"
 	@echo ""
@@ -47,6 +59,8 @@ help:
 	@echo "  clean          - Cleans build artifacts"
 	@echo "  monitor        - Starts the Serial Monitor"
 	@echo "  py-pio-install - Installs PlatformIO CLI using Python pip"
+	@echo "  clang-format   - Formats the source files using clang-format"
+	@echo "  clang-tidy     - Lints the source files using clang-tidy"
 	@echo ""
 	@echo "Variables:"
 	@echo "  PROJECT_ENV    - PlatformIO environment (default: $(PROJECT_ENV))"
@@ -60,4 +74,6 @@ help:
 	@echo "  make clean PROJECT_ENV=esp32dev    # Clean for 'esp32dev' environment"
 	@echo "  make monitor                # Start serial monitor"
 	@echo "  make py-pio-install        # Show PlatformIO CLI install command (Python pip)"
+	@echo "  make clang-format           # Format source files using clang-format"
+	@echo "  make clang-tidy             # Lint source files using clang-tidy"
 	@echo "  make help                   # Show this help message"
