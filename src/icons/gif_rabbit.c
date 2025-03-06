@@ -1,17 +1,16 @@
 #ifdef __has_include
-    #if __has_include("lvgl.h")
-        #ifndef LV_LVGL_H_INCLUDE_SIMPLE
-            #define LV_LVGL_H_INCLUDE_SIMPLE
-        #endif
-    #endif
+#if __has_include("lvgl.h")
+#ifndef LV_LVGL_H_INCLUDE_SIMPLE
+#define LV_LVGL_H_INCLUDE_SIMPLE
+#endif
+#endif
 #endif
 
 #if defined(LV_LVGL_H_INCLUDE_SIMPLE)
-    #include "lvgl.h"
+#include "lvgl.h"
 #else
-    #include "lvgl.h"
+#include "lvgl.h"
 #endif
-
 
 #ifndef LV_ATTRIBUTE_MEM_ALIGN
 #define LV_ATTRIBUTE_MEM_ALIGN
@@ -21,6 +20,7 @@
 #define LV_ATTRIBUTE_IMG_GIF_RABBIT
 #endif
 
+// clang-format off
 const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_GIF_RABBIT uint8_t gif_rabbit_map[] = {
     0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x32, 0x00, 0x32, 0x00, 0xf7, 0x1f, 0x00, 
     0x00, 0x00, 0x00, 0x24, 0x00, 0x00, 0x48, 0x00, 0x00, 0x6c, 0x00, 0x00, 0x90, 
@@ -535,13 +535,14 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_GIF_RABBI
     0x8b, 0xdf, 0x52, 0xfb, 0x2c, 0xa4, 0x64, 0xa0, 0x78, 0xd2, 0x76, 0x2b, 0xfb, 
     0xbb, 0x28, 0xad, 0x06, 0x05, 0x04, 0x00, 0x3b
 };
+// clang-format on
 
 const lv_img_dsc_t gif_rabbit = {
-  .header.cf = LV_IMG_CF_RAW_CHROMA_KEYED,
-  .header.always_zero = 0,
-  .header.reserved = 0,
-  .header.w = 50,
-  .header.h = 50,
-  .data_size = 6651,
-  .data = gif_rabbit_map,
+    .header.cf = LV_IMG_CF_RAW_CHROMA_KEYED,
+    .header.always_zero = 0,
+    .header.reserved = 0,
+    .header.w = 50,
+    .header.h = 50,
+    .data_size = 6651,
+    .data = gif_rabbit_map,
 };

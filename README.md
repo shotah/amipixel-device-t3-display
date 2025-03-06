@@ -60,7 +60,6 @@ Contributions are welcome!  Once the project is more established, we will define
 | [T4-S3][3]                    | ESP32-S3R8 | 16MB  | 8MB(OPI) | 450x600    | 2.41 Inch |
 | [T-Display-S3 AMOLED Plus][4] | ESP32-S3R8 | 16MB  | 8MB(OPI) | 240x536    | 1.91 Inch |
 
-
 | Current consumption           | Working current             | sleep current           | sleep mode            |
 | ----------------------------- | --------------------------- | ----------------------- | --------------------- |
 | [T-Display-AMOLED-Lite][1]    | (240MHz) WiFi On 90~230+ mA | About 1.1mA             | timer wakeup          |

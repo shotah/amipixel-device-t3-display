@@ -2,7 +2,8 @@
 
 #include "WString.h"
 
-typedef struct {
+typedef struct
+{
   String name;
   String zones;
 } zones_t;
