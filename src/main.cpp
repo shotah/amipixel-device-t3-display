@@ -104,6 +104,20 @@ static CoinMarketCapApiDataStream coinData[4];
 static String httpBody;
 extern CoinMarketCapApiSubsribe coinSubsribe[4] ;
 
+#ifdef SIMULATION_MODE
+// Helper functions to expose internal state for testing
+int getPixelR() {
+  return pixelR;
+}
+
+int getPixelG() {
+  return pixelG;
+}
+
+int getPixelB() {
+  return pixelB;
+}
+#endif
 
 void buttonHandleEvent(AceButton *button,
                        uint8_t eventType,

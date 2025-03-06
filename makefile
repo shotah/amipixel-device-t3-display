@@ -1,11 +1,13 @@
 # Makefile for AmiPixel PlatformIO Project
 
 PROJECT_ENV = T-Display-AMOLED       # Default PlatformIO environment (adjust if needed)
+TEST_ENV = test
+VIRTUAL_ENV = qemu_esp32
 PLATFORMIO_CMD = pio                 # Command for PlatformIO CLI (usually 'pio' or 'platformio')
 
 # --- Targets ---
 
-.PHONY: all build upload clean monitor py-pio-install test
+.PHONY: all build upload clean monitor py-pio-install deploy test
 
 all: build
 
@@ -25,7 +27,11 @@ monitor:
 	@echo "Starting Serial Monitor (environment: $(PROJECT_ENV))"
 	@$(PLATFORMIO_CMD) device monitor -e $(PROJECT_ENV)
 
-test: clean build upload monitor
+deploy: clean build upload monitor
+
+test:
+	@echo "Starting Tests (environment: $(TEST_ENV))"
+	@$(PLATFORMIO_CMD) test -e $(TEST_ENV) -vvv
 
 py-pio-install:
 	@echo "Python install of platformio starting"
