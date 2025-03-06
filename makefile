@@ -1,11 +1,11 @@
 # Makefile for AmiPixel PlatformIO Project
 
-PROJECT_ENV = lilygo-t-display-s3    # Default PlatformIO environment (adjust if needed)
+PROJECT_ENV = T-Display-AMOLED       # Default PlatformIO environment (adjust if needed)
 PLATFORMIO_CMD = pio                 # Command for PlatformIO CLI (usually 'pio' or 'platformio')
 
 # --- Targets ---
 
-.PHONY: all build upload clean monitor py-pio-install pys-test
+.PHONY: all build upload clean monitor py-pio-install test
 
 all: build
 
@@ -25,7 +25,7 @@ monitor:
 	@echo "Starting Serial Monitor (environment: $(PROJECT_ENV))"
 	@$(PLATFORMIO_CMD) device monitor -e $(PROJECT_ENV)
 
-pys-test: clean build upload monitor
+test: clean build upload monitor
 
 py-pio-install:
 	@echo "Python install of platformio starting"
