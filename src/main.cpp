@@ -22,7 +22,7 @@ void setup() {
       delay(1000); // Stop and blink LED or something to indicate error (if you have an LED)
     }
   }
-  display.setBrightness(200)
+  display.setBrightness(200);
   Serial.println("Display initialized.");
 
   // actions_setup(); // Setup for actions (you can add this back later)
