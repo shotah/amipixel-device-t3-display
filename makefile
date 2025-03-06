@@ -5,7 +5,7 @@ PLATFORMIO_CMD = pio                 # Command for PlatformIO CLI (usually 'pio'
 
 # --- Targets ---
 
-.PHONY: all build upload clean monitor
+.PHONY: all build upload clean monitor py-pio-install pys-test
 
 all: build
 
@@ -24,6 +24,8 @@ clean:
 monitor:
 	@echo "Starting Serial Monitor (environment: $(PROJECT_ENV))"
 	@$(PLATFORMIO_CMD) device monitor -e $(PROJECT_ENV)
+
+pys-test: clean build upload monitor
 
 py-pio-install:
 	@echo "Python install of platformio starting"
