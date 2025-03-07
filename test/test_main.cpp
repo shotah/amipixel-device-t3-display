@@ -1,6 +1,7 @@
 #include <unity.h>
 
 // Mock headers
+// #include <emulation.h>
 #include "mocks/Arduino.h"
 #include "mocks/WiFiMock.h"
 #include "mocks/DisplayMock.h"
@@ -38,6 +39,10 @@ void test_setup_initializes_display()
 
 void test_setup_connects_to_wifi()
 {
+  // Define the ssid and password
+  const char *ssid = "test_ssid";
+  const char *password = "test_password";
+
   // Call the setup function
   setup();
 
@@ -69,6 +74,24 @@ void test_web_server_initialized()
   TEST_ASSERT_TRUE(server.wasStarted());
   TEST_ASSERT_TRUE(server.hasHandler("/"));
   TEST_ASSERT_TRUE(server.hasHandler("/rgb"));
+}
+
+int getPixelR()
+{
+  // Mock implementation
+  return 100;
+}
+
+int getPixelG()
+{
+  // Mock implementation
+  return 150;
+}
+
+int getPixelB()
+{
+  // Mock implementation
+  return 200;
 }
 
 void test_rgb_endpoint_updates_pixel_color()

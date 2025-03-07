@@ -1,22 +1,5 @@
-/**
- * @file      Factory.ino
- * @author    Lewis He (lewishe@outlook.com)
- * @license   MIT
- * @copyright Copyright (c) 2023  Shenzhen Xin Yuan Electronic Technology Co., Ltd
- * @date      2023-07-13
- * @note      Arduino Setting
- *            Tools ->
- *                  Board:"ESP32S3 Dev Module"
- *                  USB CDC On Boot:"Enable"
- *                  USB DFU On Boot:"Disable"
- *                  Flash Size : "16MB(128Mb)"
- *                  Flash Mode"QIO 80MHz
- *                  Partition Scheme:"16M Flash(3M APP/9.9MB FATFS)"
- *                  PSRAM:"OPI PSRAM"
- *                  Upload Mode:"UART0/Hardware CDC"
- *                  USB Mode:"Hardware CDC and JTAG"
- *  Arduino IDE User need move all folders in [libdeps folder](./libdeps/)  to Arduino library folder
- */
+
+#include "constants.h"
 #include <LilyGo_AMOLED.h>
 #include <LV_Helper.h>
 #include <Arduino.h>
@@ -28,56 +11,14 @@
 #include "gui.h"
 #include <esp_sntp.h>
 #include "zones.h"
-#include <Adafruit_NeoPixel.h> //https://github.com/adafruit/Adafruit_NeoPixel
+#include <Adafruit_NeoPixel.h>
 #include <AceButton.h>
 #include <cJSON.h>
 #include "rootCa.h"
 #include <esp_wifi.h>
 
 using namespace ace_button;
-
-// #define USE_WIFI_SMART_CONFIG // Defining USE_WIFI_SMART_CONFIG will automatically use the WiFi ssid and password saved inside the chip
-
-//! You can use EspTouch to configure the network key without changing the WiFi password below
-#ifndef WIFI_SSID
-#define WIFI_SSID "Your WiFi SSID"
-#endif
-#ifndef WIFI_PASSWORD
-#define WIFI_PASSWORD "Your WiFi PASSWORD"
-#endif
-
-// !Your Coinmarketcap API KEY , See https://coinmarketcap.com/api/
-#ifndef COINMARKETCAP_APIKEY
-#define COINMARKETCAP_APIKEY ""
-#endif
-// !Your OpenWeatherMap API KEY, See https://openweathermap.org/api
-#ifndef OPENWEATHERMAP_APIKEY
-#define OPENWEATHERMAP_APIKEY ""
-#endif
-
-// !Geographical coordinates (latitude) , See https://openweathermap.org/current
-#ifndef OPENWEATHERMAP_LAT
-#define OPENWEATHERMAP_LAT "22.64610787469689"
-#endif
-
-// !Geographical coordinates (longitude) , See https://openweathermap.org/current
-#ifndef OPENWEATHERMAP_LON
-#define OPENWEATHERMAP_LON "114.05498017285154"
-#endif
-
-// For temperature in Celsius
-#define OPENWEATHERMAP_USE_CELSIUS
-
-// For temperature in Fahrenheit
-// #define OPENWEATHERMAP_USE_FAHRENHEIT
-
-#define NTP_SERVER1 "pool.ntp.org"
-#define NTP_SERVER2 "time.nist.gov"
-#define GMT_OFFSET_SEC 0
-#define DAY_LIGHT_OFFSET_SEC 0
-#define GET_TIMEZONE_API "https://ipapi.co/timezone/"
-#define COINMARKETCAP_HOST "pro-api.coinmarketcap.com"
-#define DEFAULT_TIMEZONE "CST-8" // When the time zone cannot be obtained, the default time zone is used
+using namespace Constants;
 
 Adafruit_NeoPixel *pixels = NULL;
 
@@ -345,10 +286,10 @@ void setup()
         // Just for factory testing.
         Serial.print("Use default WiFi SSID & PASSWORD!!");
         Serial.print("SSID:");
-        Serial.println(WIFI_SSID);
+        Serial.println(WiFiConfig::SSID);
         Serial.print("PASSWORD:");
-        Serial.println(WIFI_PASSWORD);
-        if (String(WIFI_SSID) == "Your WiFi SSID" || String(WIFI_PASSWORD) == "Your WiFi PASSWORD")
+        Serial.println(WiFiConfig::PASSWORD);
+        if (String(WiFiConfig::SSID) == "Your WiFi SSID" || String(WiFiConfig::PASSWORD) == "Your WiFi PASSWORD")
         {
             Serial.println("[Error] : WiFi ssid and password are not configured correctly");
             Serial.println("[Error] : WiFi ssid and password are not configured correctly");
@@ -356,7 +297,7 @@ void setup()
         }
         else
         {
-            WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+            WiFi.begin(WiFiConfig::SSID, WiFiConfig::PASSWORD);
         }
 
         // Defining USE_WIFI_SMART_CONFIG will automatically use the WiFi ssid and password saved inside the chip
@@ -405,9 +346,9 @@ void loop()
     {
         if (WiFi.status() != WL_CONNECTED)
         {
-            if (String(WIFI_SSID) != "Your WiFi SSID" || String(WIFI_PASSWORD) != "Your WiFi PASSWORD")
+            if (String(WiFiConfig::SSID) != "Your WiFi SSID" || String(WiFiConfig::PASSWORD) != "Your WiFi PASSWORD")
             {
-                WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+                WiFi.begin(WiFiConfig::SSID, WiFiConfig::PASSWORD);
                 Serial.println("Reconnecting ...");
             }
         }
@@ -483,7 +424,7 @@ void WiFiEvent(WiFiEvent_t event)
          * would be to specify a environmnet variable with TimeZone definition including daylight adjustmnet rules.
          * A list of rules for your zone could be obtained from https://github.com/esp8266/Arduino/blob/master/cores/esp8266/TZ.h
          */
-        configTzTime(DEFAULT_TIMEZONE, NTP_SERVER1, NTP_SERVER2);
+        configTzTime(TimeConfig::DEFAULT_TIMEZONE_STR, TimeConfig::NTP_SERVER_1, TimeConfig::NTP_SERVER_2);
 
         if (!vUpdateDateTimeTaskHandler)
         {
@@ -491,7 +432,7 @@ void WiFiEvent(WiFiEvent_t event)
         }
         if (!vUpdateCoin360TaskHandler)
         {
-            if (String(COINMARKETCAP_APIKEY) != "")
+            if (String(APIKeys::COINMARKETCAP) != "")
             {
                 xTaskCreate(updateCoin360Task, "coin", 10 * 1024, NULL, 10, &vUpdateCoin360TaskHandler);
             }
@@ -499,7 +440,7 @@ void WiFiEvent(WiFiEvent_t event)
         void updateWeatherTask(void *ptr);
         if (!vUpdateWeatherTaskHandler)
         {
-            if (String(OPENWEATHERMAP_APIKEY) != "")
+            if (String(APIKeys::OPENWEATHERMAP) != "")
             {
                 xTaskCreate(updateWeatherTask, "weather", 30 * 1024, NULL, 9, &vUpdateWeatherTaskHandler);
             }
@@ -531,7 +472,7 @@ void datetimeSyncTask(void *ptr)
 
             // When the time zone cannot be obtained, please check the validity of the certificate
             client.setCACert(rootCACertificate);
-            if (https.begin(client, GET_TIMEZONE_API))
+            if (https.begin(client, TimeConfig::TIMEZONE_API_URL))
             {
                 httpCode = https.GET();
                 if (httpCode > 0)
@@ -559,7 +500,7 @@ void datetimeSyncTask(void *ptr)
                 {
                     Serial.println("Failed to obtain time zone, use default time zone");
                     // When the time zone cannot be obtained, the default time zone is used
-                    httpBody = DEFAULT_TIMEZONE;
+                    httpBody = TimeConfig::DEFAULT_TIMEZONE_STR;
                     break;
                 }
                 if (httpBody == zones[i].name)
@@ -624,11 +565,11 @@ void updateCoin360Task(void *ptr)
 
             client.connect("pro-api.coinmarketcap.com", 443);
             client.println("GET " + url + " HTTP/1.1");
-            client.println("Host: " COINMARKETCAP_HOST);
+            client.println("Host: " + String(TimeConfig::COINMARKETCAP_API_HOST));
             client.println("User-Agent: arduino/1.0.0");
             client.println("Accepts: application/json");
             client.print("X-CMC_PRO_API_KEY: ");
-            client.println(COINMARKETCAP_APIKEY);
+            client.println(APIKeys::COINMARKETCAP);
             client.println();
             uint32_t now = millis();
             while (millis() - now < 3000)
@@ -770,13 +711,16 @@ void updateWeatherTask(void *ptr)
             url += String(longitude);
 #endif
 
-#if defined(OPENWEATHERMAP_USE_FAHRENHEIT)
-            url += "&units=imperial";
-#elif defined(OPENWEATHERMAP_USE_CELSIUS)
-            url += "&units=metric";
-#endif
+            if constexpr (WeatherLocation::USE_FAHRENHEIT)
+            {
+                url += "&units=imperial";
+            }
+            else if constexpr (WeatherLocation::USE_CELSIUS)
+            {
+                url += "&units=metric";
+            }
             url += "&appid=";
-            url += OPENWEATHERMAP_APIKEY;
+            url += APIKeys::OPENWEATHERMAP;
 
             client.setCACert(OpenWeatherRootCA);
 

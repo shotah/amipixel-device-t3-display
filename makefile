@@ -33,6 +33,10 @@ monitor:
 
 deploy: clean build upload monitor
 
+vbuild:
+	@echo "Building AmiPixel project for environment: $(VIRTUAL_ENV)"
+	@$(PLATFORMIO_CMD) run -e $(VIRTUAL_ENV)
+
 test:
 	@echo "Starting Tests (environment: $(TEST_ENV))"
 	@$(PLATFORMIO_CMD) test -e $(TEST_ENV) -vvv
