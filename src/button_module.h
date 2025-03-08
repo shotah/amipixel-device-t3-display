@@ -10,7 +10,7 @@ namespace Button
 {
 
     // --- Function Prototypes ---
-    void setupButton(LilyGo_Class &amoled); // Pass amoled object for initialization and callbacks
+    void setupButton(LilyGo_Class &amoled, Adafruit_NeoPixel *pixels_ptr); // Pass amoled object for initialization and callbacks
     void buttonHandleEvent(ace_button::AceButton *button, uint8_t eventType, uint8_t buttonState);
     void buttonHandlerTask(void *ptr);
 

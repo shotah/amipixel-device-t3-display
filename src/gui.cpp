@@ -9,7 +9,7 @@
 #include "coin.h"    // Include Coin module header
 
 using namespace Constants;
-static Adafruit_NeoPixel *pixels_ptr_local = nullptr;
+static Adafruit_NeoPixel *pixels_ptr = nullptr;
 
 extern LilyGo_Class amoled;
 
