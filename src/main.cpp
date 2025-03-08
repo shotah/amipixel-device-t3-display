@@ -9,6 +9,7 @@
 #include <esp_wifi.h>
 #include <WiFi.h>
 
+#include "globals.h"
 #include "wifi_module.h"     // Include WiFi module header
 #include "datetime_module.h" // Include DateTime module header
 #include "weather.h"         // Include Weather module header

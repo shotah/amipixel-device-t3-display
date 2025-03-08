@@ -1,9 +1,9 @@
 
+#include <Adafruit_NeoPixel.h>
 #include <LilyGo_AMOLED.h>
 #include "gui.h"
-#include <Adafruit_NeoPixel.h>
 #include <WiFi.h>
-
+#include "globals.h"
 #include "constants.h"
 #include "weather.h" // Include Weather module header
 #include "coin.h"    // Include Coin module header

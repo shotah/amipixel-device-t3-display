@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <Adafruit_NeoPixel.h>
 #include <lvgl.h>
 #include <time.h>
 #include <Arduino.h>
