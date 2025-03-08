@@ -380,30 +380,30 @@ static void pixels_event_handler(lv_event_t *e)
     lv_obj_t *target = lv_event_get_target(e);
     lv_event_code_t code = lv_event_get_code(e);
     uint8_t *index = (uint8_t *)lv_obj_get_user_data(target);
-    if (!index || !pixels)
+    if (!index || !pixels_ptr)
         return;
     if (code == LV_EVENT_CLICKED || code == LV_EVENT_VALUE_CHANGED)
     {
         switch (*index)
         {
         case 0:
-            pixels->setPixelColor(0, pixels->Color(255, 0, 0));
-            pixels->show();
+            pixels_ptr->setPixelColor(0, pixels_ptr->Color(255, 0, 0));
+            pixels_ptr->show();
             break;
         case 1:
-            pixels->setPixelColor(0, pixels->Color(0, 255, 0));
-            pixels->show();
+            pixels_ptr->setPixelColor(0, pixels_ptr->Color(0, 255, 0));
+            pixels_ptr->show();
             break;
         case 2:
-            pixels->setPixelColor(0, pixels->Color(0, 0, 255));
-            pixels->show();
+            pixels_ptr->setPixelColor(0, pixels_ptr->Color(0, 0, 255));
+            pixels_ptr->show();
             break;
         case 3:
         {
             lv_obj_t *cw = (lv_obj_t *)lv_event_get_user_data(e);
             lv_color_t c = lv_colorwheel_get_rgb(cw);
-            pixels->setPixelColor(0, pixels->Color(c.ch.red, (c.ch.green_h << 3) | c.ch.green_l, c.ch.blue));
-            pixels->show();
+            pixels_ptr->setPixelColor(0, pixels_ptr->Color(c.ch.red, (c.ch.green_h << 3) | c.ch.green_l, c.ch.blue));
+            pixels_ptr->show();
         }
         break;
         case 4:
@@ -414,8 +414,8 @@ static void pixels_event_handler(lv_event_t *e)
             lv_label_set_text_fmt(slider_label, "%u%%", percentage);
             lv_obj_align_to(slider_label, target, LV_ALIGN_CENTER, 0, 0);
             uint8_t val = (uint8_t)lv_slider_get_value(target);
-            pixels->setBrightness(val);
-            pixels->show();
+            pixels_ptr->setBrightness(val);
+            pixels_ptr->show();
         }
         break;
         default:
