@@ -1,16 +1,15 @@
-/**
- * @file      gui.cpp
- * @author    Lewis He (lewishe@outlook.com)
- * @license   MIT
- * @copyright Copyright (c) 2023  Shenzhen Xin Yuan Electronic Technology Co., Ltd
- * @date      2023-07-13
- *
- */
 
 #include <LilyGo_AMOLED.h>
 #include "gui.h"
 #include <Adafruit_NeoPixel.h>
 #include <WiFi.h>
+
+#include "constants.h"
+#include "weather.h" // Include Weather module header
+#include "coin.h"    // Include Coin module header
+
+using namespace Constants;
+static Adafruit_NeoPixel *pixels_ptr_local = nullptr;
 
 extern LilyGo_Class amoled;
 
@@ -86,7 +85,7 @@ static void update_date(lv_timer_t *e)
     lv_label_set_text_fmt(month_label, "%s", month_char[timeinfo.tm_mon]);
     if (pageId == 3)
     {
-        lv_msg_send(TEMPERATURE_MSG_ID, NULL);
+        lv_msg_send(MessageIDs::TEMPERATURE_MSG_ID, NULL);
     }
 }
 
@@ -225,7 +224,7 @@ void createTimeUI(lv_obj_t *parent)
         lv_obj_set_style_text_font(label, &lv_font_montserrat_20, 0);
         lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
         lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -50);
-        lv_msg_subsribe_obj(COIN_MSG_ID, label, NULL);
+        lv_msg_subsribe_obj(MessageIDs::COIN_MSG_ID, label, NULL);
 
         // Addde last obj message cb
         lv_obj_add_event_cb(label, [](lv_event_t *e)
@@ -299,7 +298,7 @@ void createBrightnessUI(lv_obj_t *parent)
     label = lv_label_create(cont);
     lv_label_set_text(label, "Temperature:0°C");
     lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
-    lv_msg_subsribe_obj(TEMPERATURE_MSG_ID, label, NULL);
+    lv_msg_subsribe_obj(MessageIDs::TEMPERATURE_MSG_ID, label, NULL);
 
     // Added temperture change message cb
     // TODO:Need fix
@@ -322,14 +321,14 @@ void createBrightnessUI(lv_obj_t *parent)
             lv_label_set_text(label, "SDCard: NULL");
         }
         lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
-        lv_msg_subsribe_obj(TEMPERATURE_MSG_ID, label, NULL);
+        lv_msg_subsribe_obj(MessageIDs::TEMPERATURE_MSG_ID, label, NULL);
     }
 
     // BRIGHTNESS
     label = lv_label_create(cont);
     lv_label_set_text(label, "Brightness:");
     lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
-    lv_msg_subsribe_obj(WIFI_MSG_ID, label, NULL);
+    lv_msg_subsribe_obj(MessageIDs::WIFI_MSG_ID, label, NULL);
 
     /*Create a slider and add the style*/
     lv_obj_t *slider = lv_slider_create(cont);
@@ -632,7 +631,7 @@ void weather_event_cb(lv_event_t *e)
     lv_obj_t *label = (lv_obj_t *)lv_event_get_target(e);
     uint8_t *index = (uint8_t *)lv_event_get_user_data(e);
     lv_msg_t *msg = lv_event_get_msg(e);
-    OpenWeatherMapApi *api = (OpenWeatherMapApi *)lv_msg_get_payload(msg);
+    Weather::WeatherApiData *api = (Weather::WeatherApiData *)lv_msg_get_payload(msg);
     if (!index)
     {
         Serial.println("Empty index point");
@@ -706,28 +705,28 @@ void createWeatherUI(lv_obj_t *parent)
     lv_label_set_text(label, "ShenZhen");
     lv_obj_set_style_text_font(label, &lv_font_montserrat_32, 0);
     lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
-    lv_msg_subsribe_obj(WEATHER_MSG_ID, label, NULL);
+    lv_msg_subsribe_obj(MessageIDs::WEATHER_MSG_ID, label, NULL);
     lv_obj_add_event_cb(label, weather_event_cb, LV_EVENT_MSG_RECEIVED, &index[0]);
 
     label = lv_label_create(weather_string_cont);
     lv_label_set_text(label, "Min/Max:30/35°C");
     lv_obj_set_style_text_font(label, &lv_font_montserrat_18, 0);
     lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
-    lv_msg_subsribe_obj(WEATHER_MSG_ID, label, NULL);
+    lv_msg_subsribe_obj(MessageIDs::WEATHER_MSG_ID, label, NULL);
     lv_obj_add_event_cb(label, weather_event_cb, LV_EVENT_MSG_RECEIVED, &index[1]);
 
     label = lv_label_create(weather_string_cont);
     lv_label_set_text(label, "Humidity:53%");
     lv_obj_set_style_text_font(label, &lv_font_montserrat_18, 0);
     lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
-    lv_msg_subsribe_obj(WEATHER_MSG_ID, label, NULL);
+    lv_msg_subsribe_obj(MessageIDs::WEATHER_MSG_ID, label, NULL);
     lv_obj_add_event_cb(label, weather_event_cb, LV_EVENT_MSG_RECEIVED, &index[2]);
 
     label = lv_label_create(weather_string_cont);
     lv_label_set_text(label, "Pressure:1000 Pa");
     lv_obj_set_style_text_font(label, &lv_font_montserrat_18, 0);
     lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
-    lv_msg_subsribe_obj(WEATHER_MSG_ID, label, NULL);
+    lv_msg_subsribe_obj(MessageIDs::WEATHER_MSG_ID, label, NULL);
     lv_obj_add_event_cb(label, weather_event_cb, LV_EVENT_MSG_RECEIVED, &index[3]);
 
     // WEATHER ICON CONT  WEATHER ICON CONT  WEATHER ICON CONT
@@ -747,7 +746,7 @@ void createWeatherUI(lv_obj_t *parent)
     lv_obj_set_style_text_font(label, &lv_font_montserrat_36, 0);
     lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
     lv_obj_align_to(label, img, LV_ALIGN_OUT_BOTTOM_MID, 0, 5);
-    lv_msg_subsribe_obj(WEATHER_MSG_ID, label, NULL);
+    lv_msg_subsribe_obj(MessageIDs::WEATHER_MSG_ID, label, NULL);
     lv_obj_add_event_cb(label, weather_event_cb, LV_EVENT_MSG_RECEIVED, &index[4]);
 
     // Free api, so there is no way to get the weather forecast, so the following is fake data
@@ -990,7 +989,7 @@ void showCertification(uint32_t delay_ms)
 
 uint16_t max_item_num = 6;
 
-void factoryGUI(void)
+void factoryGUI(Adafruit_NeoPixel *pixels_ptr)
 {
     static lv_style_t bgStyle;
     lv_style_init(&bgStyle);

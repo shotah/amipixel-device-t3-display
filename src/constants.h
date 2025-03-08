@@ -87,8 +87,8 @@ namespace Constants
 
     struct WeatherLocation
     {
-        static constexpr const char *LATITUDE = "47.59525100879402"; // Latitude and Longitude as strings for consistency with the original code
-        static constexpr const char *LONGITUDE = "-122.30992705368763";
+        static constexpr double LATITUDE = 47.59525100879402; // Latitude and Longitude as strings for consistency with the original code
+        static constexpr double LONGITUDE = -122.30992705368763;
         static constexpr const bool USE_CELSIUS = false; // Or static const bool USE_FAHRENHEIT = true; if you prefer Fahrenheit
         static constexpr const bool USE_FAHRENHEIT = true;
     };
@@ -102,6 +102,23 @@ namespace Constants
         static constexpr const char *TIMEZONE_API_URL = "https://ipapi.co/timezone/";      // API URLs are strings
         static constexpr const char *COINMARKETCAP_API_HOST = "pro-api.coinmarketcap.com"; // Hostnames are strings
         static constexpr const char *DEFAULT_TIMEZONE_STR = "CST-8";                       // Timezone as string
+    };
+
+    struct MessageIDs
+    {
+        static constexpr int COIN_MSG_ID = 0x1000;
+        static constexpr int WIFI_MSG_ID = 0x1001;
+        static constexpr int TEMPERATURE_MSG_ID = 0x1002;
+        static constexpr int WEATHER_MSG_ID = 0x1003;
+
+        // --- WiFi Specific Messages ---
+        enum WiFiMessagesEnum : uint32_t
+        { // Use enum class for better scoping, and uint32_t to match lv_msg_id
+            WIFI_CONNECTED_MSG = 0x1100,
+            WIFI_DISCONNECTED_MSG = 0x1101,
+            WIFI_GOT_IP_MSG = 0x1102,
+            WIFI_LOST_IP_MSG = 0x1103
+        };
     };
 } // namespace Constants
 

@@ -12,6 +12,7 @@
                 "C:/Users/chris/.platformio/packages/framework-arduinoespressif32@3.20016.0/libraries/HTTPClient/src",
                 "C:/Users/chris/.platformio/packages/framework-arduinoespressif32@3.20016.0/libraries/WiFiClientSecure/src",
                 "C:/Users/chris/.platformio/packages/framework-arduinoespressif32@3.20016.0/libraries/WiFi/src",
+                "C:/workspaces/amipixel-device-t3-display/.pio/libdeps/T-Display-AMOLED/NTPClient",
                 "C:/workspaces/amipixel-device-t3-display/.pio/libdeps/T-Display-AMOLED/OneWire",
                 "C:/workspaces/amipixel-device-t3-display/.pio/libdeps/T-Display-AMOLED/SparkFun MAX3010x Pulse and Proximity Sensor Library/src",
                 "C:/workspaces/amipixel-device-t3-display/.pio/libdeps/T-Display-AMOLED/TFT_eSPI",
@@ -269,6 +270,7 @@
                     "C:/Users/chris/.platformio/packages/framework-arduinoespressif32@3.20016.0/libraries/HTTPClient/src",
                     "C:/Users/chris/.platformio/packages/framework-arduinoespressif32@3.20016.0/libraries/WiFiClientSecure/src",
                     "C:/Users/chris/.platformio/packages/framework-arduinoespressif32@3.20016.0/libraries/WiFi/src",
+                    "C:/workspaces/amipixel-device-t3-display/.pio/libdeps/T-Display-AMOLED/NTPClient",
                     "C:/workspaces/amipixel-device-t3-display/.pio/libdeps/T-Display-AMOLED/OneWire",
                     "C:/workspaces/amipixel-device-t3-display/.pio/libdeps/T-Display-AMOLED/SparkFun MAX3010x Pulse and Proximity Sensor Library/src",
                     "C:/workspaces/amipixel-device-t3-display/.pio/libdeps/T-Display-AMOLED/TFT_eSPI",
@@ -549,7 +551,7 @@
                 ""
             ],
             "cStandard": "gnu99",
-            "cppStandard": "gnu++17",
+            "cppStandard": "gnu++20",
             "compilerPath": "C:/Users/chris/.platformio/packages/toolchain-xtensa-esp32s3/bin/xtensa-esp32s3-elf-gcc.exe",
             "compilerArgs": [
                 "-mlongcalls",
