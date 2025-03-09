@@ -1,13 +1,16 @@
-#ifndef WIFI_MODULE_H // Updated to WIFI_MODULE_H
-#define WIFI_MODULE_H // Updated to WIFI_MODULE_H
+#ifndef WIFI_MODULE_H
+#define WIFI_MODULE_H
 
-#include <Arduino.h>
+#include <Arduino.h> // NOLINT(readability-magic-numbers)
 #include <WiFi.h>
+
+namespace WiFiModule { // Add namespace declaration
 
 // --- Function Prototypes ---
 void setupWiFi();
-void connectWiFi();                // Add this line: prototype for connectWiFi()
-void WiFiEvent(WiFiEvent_t event); // Keep this - WiFi event handler
-void disconnectWiFi();             // Add this line - for disconnecting WiFi
+void connectWiFi();
+void disconnectWiFi();
 
-#endif /* WIFI_H */
+} // namespace WiFiModule
+
+#endif /* WIFI_MODULE_H */

@@ -2,7 +2,8 @@
  * @file      rootCa.h
  * @author    Lewis He (lewishe@outlook.com)
  * @license   MIT
- * @copyright Copyright (c) 2023  Shenzhen Xinyuan Electronic Technology Co., Ltd
+ * @copyright Copyright (c) 2023  Shenzhen Xinyuan Electronic Technology Co.,
+ * Ltd
  * @date      2023-07-14
  *
  */
@@ -12,7 +13,8 @@
 #include <pgmspace.h>
 
 // Use command get server ca
-// openssl s_client -connect ipapi.co:443 -showcerts </dev/null 2> /dev/null | sed -n '/BEGIN/,/END/p' > server.pem
+// openssl s_client -connect ipapi.co:443 -showcerts </dev/null 2> /dev/null |
+// sed -n '/BEGIN/,/END/p' > server.pem
 static const char *rootCACertificate PROGMEM = R"EOF(
 -----BEGIN CERTIFICATE-----
 MIIDnjCCA0OgAwIBAgIRANFLtJTaccvhE+s2A/q3tBAwCgYIKoZIzj0EAwIwOzEL

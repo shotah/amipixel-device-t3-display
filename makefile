@@ -11,7 +11,7 @@ PLATFORMIO_CMD = pio                 # Command for PlatformIO CLI (usually 'pio'
 
 # --- Targets ---
 
-.PHONY: all build upload clean monitor py-pio-install deploy test
+.PHONY: all build upload clean monitor py-pio-install deploy test compdb
 
 all: build
 
@@ -49,9 +49,13 @@ format:
 	@echo "Running clang-format on source files"
 	clang-format -i src/*.cpp src/*.h
 
+compdb:
+	@echo "Creates JSON file to use with clang"
+	@$(PLATFORMIO_CMD) run -t compiledb
+
 tidy:
 	@echo "Running clang-tidy on source files"
-	clang-tidy src/*.cpp -- -Iinclude
+	@$(PLATFORMIO_CMD) check
 
 help:
 	@echo "Makefile for AmiPixel PlatformIO Project"

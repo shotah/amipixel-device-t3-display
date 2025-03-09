@@ -4,10 +4,9 @@
 #include <Arduino.h>
 #include <LilyGo_AMOLED.h>
 
-namespace DisplayDriver
-{
+namespace DisplayDriver {
 
-    void setupDisplayDriver(LilyGo_Class &amoled_instance); // Pass amoled instance
+void setupDisplayDriver(LilyGo_Class &amoled_instance); // Pass amoled instance
 
 } // namespace DisplayDriver
 
