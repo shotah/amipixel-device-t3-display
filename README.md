@@ -27,17 +27,17 @@ AmiPixel is a project to create a charming and interactive digital avatar that l
 
 Before you can build and upload AmiPixel, you need to install the PlatformIO Command-Line Interface (CLI).
 
-**Recommended Method:  Using the VS Code PlatformIO IDE Extension**
+### Recommended Method: Using the VS Code PlatformIO IDE Extension
 
 1. **Install VS Code:** [https://code.visualstudio.com/](https://code.visualstudio.com/)
 2. **Install the PlatformIO IDE extension** in VS Code.  Search for "PlatformIO IDE" in the Extensions Marketplace (Ctrl+Shift+X or Cmd+Shift+X) and install it.  The PlatformIO IDE extension will automatically install the PlatformIO CLI for you.
 3. **Restart VS Code** after installing the extension.
 
-**Alternative Method: Manual PlatformIO Core Installation**
+### Alternative Method: Manual PlatformIO Core Installation
 
 If you prefer to install PlatformIO Core manually (without VS Code), follow the official installation guide: [https://docs.platformio.org/en/latest/core/installation.html](https://docs.platformio.org/en/latest/core/installation.html)
 
-**Verify Installation**
+### Verify Installation
 
 After installation, open a terminal or command prompt and run:
 
@@ -71,6 +71,25 @@ Contributions are welcome!  Once the project is more established, we will define
 [2]: https://www.lilygo.cc/products/t-display-s3-amoled
 [3]: https://www.lilygo.cc/products/t4-s3
 [4]: https://www.lilygo.cc/products/t-display-s3-amoled
+
+## Uploading Filesystem Image (for Data Directory)
+
+If you are using the `data` directory (for example, to store web pages for WiFi configuration), you need to upload the filesystem image to the ESP32. This step is **required after you add, modify, or delete any files in the `data` directory.**
+
+**Steps to Upload Filesystem Image in PlatformIO:**
+
+1. **Open PlatformIO Project Tasks:** In VSCode, find the PlatformIO icon in the Activity Bar (usually on the left). Click it to open the PlatformIO Explorer.
+2. **Navigate to Project Tasks:** In the PlatformIO Explorer, expand your project name (e.g., `T-Display-AMOLED`).
+3. **Expand the Environment:** Expand the environment for your board (e.g., `T-Display-AMOLED`).
+4. **Find "Upload Filesystem Image":** Under the "Platform" category, you will see the task **"Upload Filesystem Image"**.
+5. **Run "Upload Filesystem Image":** Click on **"Upload Filesystem Image"** to execute the task. PlatformIO will format the filesystem and upload the contents of your `data` directory to the ESP32.
+6. **Upload Program Code:** After the "Upload Filesystem Image" task completes, you must then **re-upload your program code** using the regular "Upload" task in PlatformIO (or "Upload and Monitor"). This ensures your code runs with the newly uploaded filesystem.
+
+**Verification:**
+
+After uploading both the filesystem image and your program code, you can verify if the files were uploaded correctly by adding code to your `src/main.cpp` to list the contents of the SPIFFS filesystem (as we did in the previous steps). Check the Serial Monitor output for the list of files, including your `wifi_config.htm` (or other files you added to the `data` directory).
+
+**Important:** Remember to run "Upload Filesystem Image" whenever you change the contents of the `data` directory, followed by a regular code upload.
 
 ## License
 

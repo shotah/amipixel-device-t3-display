@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>WiFi Configuration</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            /* Use a modern sans-serif font */
+            background-color: #f4f4f4;
+            /* Light gray background */
+            color: #333;
+            /* Dark gray text color */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            /* Make the container fill the viewport height */
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+        /* Import Roboto font from Google Fonts */
+
+        .container {
+            background-color: #fff;
+            /* White container background */
+            padding: 30px;
+            border-radius: 10px;
+            /* Rounded corners */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            /* Subtle shadow */
+            width: 90%;
+            /* Responsive width */
+            max-width: 400px;
+            /* Maximum width for larger screens */
+            text-align: center;
+        }
+
+        h1 {
+            color: #007BFF;
+            /* Blue heading color */
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            /* Slightly bolder label font */
+            text-align: left;
+            /* Align labels to the left */
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            /* Light gray border for inputs */
+            border-radius: 5px;
+            box-sizing: border-box;
+            /* Ensure padding is inside the width */
+        }
+
+        input[type="submit"] {
+            background-color: #007BFF;
+            /* Blue submit button background */
+            color: white;
+            /* White button text */
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            /* Smooth hover effect */
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+            /* Darker blue on hover */
+        }
+
+        .error,
+        .success {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .error {
+            background-color: #ffe0e0;
+            /* Light red background for errors */
+            color: #ff0000;
+            /* Red error text */
+            border: 1px solid #ff0000;
+            /* Red border for errors */
+        }
+
+        .success {
+            background-color: #e0ffe0;
+            /* Light green background for success */
+            color: #008000;
+            /* Green success text */
+            border: 1px solid #008000;
+            /* Green border for success */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>WiFi Configuration</h1>
+        <form method="post" action="/config">
+            <label for="ssid">WiFi Network (SSID):</label>
+            <input type="text" id="ssid" name="ssid" required>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password">
+
+            <input type="submit" value="Connect">
+        </form>
+        <div id="error" class="error" style="display:none;"></div>
+        <div id="success" class="success" style="display:none;"></div>
+    </div>
+    <script>
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, '\\$&');
+            var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const errorParam = getParameterByName('error');
+            const successParam = getParameterByName('success');
+            const errorDiv = document.getElementById('error');
+            const successDiv = document.getElementById('success');
+
+            if (errorParam) {
+                errorDiv.textContent = errorParam;
+                errorDiv.style.display = 'block';
+            }
+
+            if (successParam) {
+                successDiv.textContent = successParam;
+                successDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+
+</html>

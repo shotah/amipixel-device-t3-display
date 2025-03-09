@@ -8,7 +8,7 @@
 #include <esp_sntp.h>
 #include <esp_wifi.h>
 #include <WiFi.h>
-
+#include <SPIFFS.h>
 #include "globals.h"
 #include "wifi_module.h"     // Include WiFi module header
 #include "datetime_module.h" // Include DateTime module header
@@ -37,8 +37,36 @@ void setup();                                                                   
 void setup()
 {
     Serial.begin(115200);
-    delay(3000); // <---- ADD this delay for serial initialization
+    delay(7000); // <---- ADD this delay for serial initialization
     Serial.println("Starting Factory Example with Modular Code...");
+
+    // --- SPIFFS File System Test ---  <--- Insert the SPIFFS code block HERE
+    if (!SPIFFS.begin(true))
+    {
+        Serial.println("SPIFFS Mount Failed");
+    }
+    else
+    {
+        Serial.println("SPIFFS Mount Success");
+        Serial.println("--- SPIFFS Root Directory Contents: ---");
+        File root = SPIFFS.open("/");
+        if (!root)
+        {
+            Serial.println("- Failed to open root directory");
+        }
+        else
+        {
+            File file = root.openNextFile();
+            while (file)
+            {
+                Serial.print("- File: ");
+                Serial.println(file.name());
+                file = root.openNextFile();
+            }
+            Serial.println("--- End of SPIFFS Root Directory Contents ---");
+        }
+    }
+    // --- End SPIFFS File System Test ---
 
     bool rslt = false;
 

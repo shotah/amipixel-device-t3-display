@@ -3,6 +3,12 @@
 #include <esp_wifi.h>
 #include "constants.h" // Include constants.h for MessageIDs and WiFiConfig
 #include "lvgl.h"      // Include lvgl.h for lv_msg_send
+#include <WiFi.h>
+#include <WebServer.h>       // ESP32 WebServer library
+#include <ESP_Preferences.h> // For persistent storage
+#include <PageBuilder.h>     // PageBuilder library
+#include <SPIFFS.h>          // For SPIFFS filesystem access
+#include <DNSServer.h>       // For Captive Portal DNS
 
 using namespace Constants;
 
