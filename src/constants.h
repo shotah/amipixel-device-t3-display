@@ -13,20 +13,20 @@ namespace Constants
 
     struct I2C
     {
-        static const int SDA_PIN = 21; // More descriptive names
+        static const int SDA_PIN = 21;
         static const int SCL_PIN = 20;
-        static const int OLED_ADDRESS = 0x3C; // More descriptive names, use hex for addresses
-        static const int OLED_RESET_PIN = -1; // More descriptive names
+        static const int OLED_ADDRESS = 0x3C;
+        static const int OLED_RESET_PIN = -1;
     };
 
     struct SPI
     {
-        static const int MOSI_PIN = 11; // More descriptive names
+        static const int MOSI_PIN = 11;
         static const int MISO_PIN = 12;
         static const int SCK_PIN = 13;
         static const int CS_PIN = 10;
-        static const int TFT_DC_PIN = 9;    // More descriptive names
-        static const int TFT_RESET_PIN = 8; // More descriptive names
+        static const int TFT_DC_PIN = 9;
+        static const int TFT_RESET_PIN = 8;
     };
 
     struct LED
@@ -48,7 +48,7 @@ namespace Constants
     struct Timing
     {
         static const int FRAMES_PER_SECOND = 60;
-        static const int PATTERN_DELAY_MS = 500; // More descriptive name, units in milliseconds
+        static const int PATTERN_DELAY_MS = 500;
     };
 
     struct ColorPalette
@@ -77,6 +77,7 @@ namespace Constants
     {
         static constexpr const char *SSID = "Your WiFi SSID";         // Use const char* for string literals
         static constexpr const char *PASSWORD = "Your WiFi PASSWORD"; // Use const char* for string literals
+        static const int WIFI_MAX_CONNECT_RETRIES = 15;
     };
 
     struct APIKeys

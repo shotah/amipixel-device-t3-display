@@ -74,7 +74,7 @@ namespace WiFiModule
                     Serial.println("WiFi disconnected");
                     wifi_connected = false;
                     break;
-                case WIFI_EVENT_STA_GOT_IP:
+                case ARDUINO_EVENT_WIFI_STA_GOT_IP:
                     Serial.print("WiFi assigned IP address: ");
                     Serial.println(WiFi.localIP());
                     break;
@@ -89,7 +89,7 @@ namespace WiFiModule
     {
         Serial.println("Starting WiFi Access Point (AP) for configuration...");
         WiFi.mode(WIFI_AP);
-        WiFi.softAP(WIFI_CONFIG_AP_SSID); // Define WIFI_CONFIG_AP_SSID in constants.h
+        WiFi.softAP(WiFiConfig::SSID); // Define WIFI_CONFIG_AP_SSID in constants.h
 
         IPAddress apIP = WiFi.softAPIP();
         Serial.print("AP IP address: ");
@@ -98,17 +98,13 @@ namespace WiFiModule
         // Set up DNS server for captive portal
         dnsServer.start(53, "*", apIP); // Port 53, wildcard domain, AP IP
 
-        // Initialize PageBuilder to serve files from SPIFFS
-        pageBuilder.begin(SPIFFS, "/");
-
         // --- Web Server Routes ---
 
         // Route for the configuration page (wifi_config.htm)
-        server.on("/", HTTP_GET, []()
-                  {
-                      Serial.println("Serving WiFi config page...");
-                      pageBuilder.serveStatic("/wifi_config.htm", server); // Serve from SPIFFS
-                  });
+        PageElement wifiConfigPageElement("file:/wifi_config.htm");
+        PageBuilder wifiConfigPage("/", {wifiConfigPageElement});
+        wifiConfigPage.insert(server);
+        server.begin();
 
         // Route to handle form submission (POST request to /config)
         server.on("/config", HTTP_POST, []()
@@ -165,7 +161,7 @@ namespace WiFiModule
         Serial.println(ssid);
 
         int retries = 0;
-        while (WiFi.status() != WL_CONNECTED && retries < WIFI_MAX_CONNECT_RETRIES)
+        while (WiFi.status() != WL_CONNECTED && retries < WiFiConfig::WIFI_MAX_CONNECT_RETRIES)
         {
             delay(1000);
             Serial.print(".");
