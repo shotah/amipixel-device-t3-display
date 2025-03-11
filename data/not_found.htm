@@ -2,13 +2,76 @@
 <html>
 
 <head>
-    <title>Page Not Found</title>
+    <title>404 - Page Not Found</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            /* Use a modern sans-serif font */
+            background-color: #f4f4f4;
+            /* Light gray background */
+            color: #333;
+            /* Dark gray text color */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            /* Make the container fill the viewport height */
+        }
+
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            /* Soft shadow for depth */
+            text-align: center;
+        }
+
+        h1 {
+            color: #007bff;
+            /* Example primary color - you can adjust */
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        p {
+            line-height: 1.6;
+            margin-bottom: 20px;
+            /* Slightly reduced margin before button */
+        }
+
+        .button-home {
+            display: inline-block;
+            /* Keep as inline-block for button styling */
+            padding: 12px 30px;
+            background-color: #007bff;
+            /* Example primary button color */
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            /* Smooth hover effect */
+            margin-top: 20px;
+            /* Add margin to separate from paragraph */
+        }
+
+        .button-home:hover {
+            background-color: #0056b3;
+            /* Darker shade on hover */
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
-    <h1>404 - Page Not Found</h1>
-    <p>Sorry, the page you requested could not be found.</p>
-    <p>Please check the URL or go back to the <a href="/">homepage</a>.</p>
+    <div class="container">
+        <h1>404 - Page Not Found</h1>
+        <p>Sorry, the page you requested could not be found.</p>
+        <div><a href="/" class="button-home">homepage</a></div>
+    </div>
 </body>
 
 </html>

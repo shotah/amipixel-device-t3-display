@@ -19,7 +19,7 @@
 #include <lvgl.h>
 #include <time.h>
 
-#include <AceButton.h> // AceButton is used in button_module, but included here for global button definition (if needed temporarily)
+#include <AceButton.h>         // AceButton is used in button_module, but included here for global button definition (if needed temporarily)
 #include <Adafruit_NeoPixel.h> // NeoPixel is used in button_module, included here if needed temporarily
 
 using namespace ace_button;
@@ -40,23 +40,31 @@ void buttonHandleEvent(
 void loop();              // Keep loop prototype
 void setup();             // Keep setup prototype
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
   delay(7000); // <---- ADD this delay for serial initialization
   Serial.println("Starting Factory Example with Modular Code...");
 
   // --- SPIFFS File System Test ---  <--- Insert the SPIFFS code block HERE
-  if (!SPIFFS.begin(true)) {
+  if (!SPIFFS.begin(true))
+  {
     Serial.println("SPIFFS Mount Failed");
-  } else {
+  }
+  else
+  {
     Serial.println("SPIFFS Mount Success");
     Serial.println("--- SPIFFS Root Directory Contents: ---");
     File root = SPIFFS.open("/");
-    if (!root) {
+    if (!root)
+    {
       Serial.println("- Failed to open root directory");
-    } else {
+    }
+    else
+    {
       File file = root.openNextFile();
-      while (file) {
+      while (file)
+      {
         Serial.print("- File: ");
         Serial.println(file.name());
         file = root.openNextFile();
@@ -74,7 +82,8 @@ void setup() {
   // after amoled.begin())
   Adafruit_NeoPixel *pixels = NULL; // Global declaration - OK here
   const BoardsConfigure_t *boards = amoled.getBoardsConfigure();
-  if (boards->pixelsPins != -1) {
+  if (boards->pixelsPins != -1)
+  {
     pixels = new Adafruit_NeoPixel(BOARD_PIXELS_NUM, boards->pixelsPins,
                                    NEO_GRB + NEO_KHZ800);
     pixels->begin(); // This initializes the NeoPixel library.
@@ -85,8 +94,10 @@ void setup() {
   Serial.println(amoled.getName());
   Serial.println("============================================");
 
-  if (!rslt) {
-    while (1) {
+  if (!rslt)
+  {
+    while (1)
+    {
       Serial.println("The board model cannot be detected, please raise the "
                      "Core Debug Level to an error");
       delay(1000);
@@ -97,7 +108,8 @@ void setup() {
   beginLvglHelper(amoled);
 
   // --- Module Setup ---
-  setupWiFi();                     // Setup WiFi module
+  Serial.println("Setting up WiFi...");
+  WiFiModule::setupWiFi();         // Setup WiFi module
   DateTime::setupDateTime(amoled); // Setup DateTime module
   Weather::setupWeather();         // Setup Weather module
   Coin::setupCoin();               // Setup Coin module
@@ -112,10 +124,6 @@ void setup() {
   // Draw Factory GUI
   factoryGUI(pixels);
 
-  // --- WiFi Connection (moved to wifi_module.cpp for setup, but connection can
-  // start here) ---
-  connectWiFi();
-
   // Enable Watchdog
   enableLoopWDT();
   Serial.println("Setup complete. Entering loop().");
@@ -123,17 +131,38 @@ void setup() {
 
 uint32_t last_check_connected = 0;
 
-void loop() {
-  if (sleep_flag) {
+void loop()
+{
+  if (sleep_flag)
+  {
     return; // If sleep_flag is set, exit loop (sleep handled in button module)
   }
-  if (last_check_connected < millis()) {
-    if (WiFi.status() != WL_CONNECTED) {
-      connectWiFi(); // Reconnect WiFi if disconnected (using wifi_module
-                     // function)
-      Serial.println("Reconnecting WiFi in loop...");
+  if (last_check_connected < millis())
+
+  {
+    if (WiFi.status() != WL_CONNECTED)
+
+    {
+      Serial.println("WiFi Disconnected. Attempting to reconnect using saved credentials...");
+
+      // --- Retrieve saved SSID and password from Preferences ---
+      String savedSSID = preferences.getString("ssid", "");
+      String savedPassword = preferences.getString("password", "");
+
+      // --- Call the *new* connectToWiFi with saved credentials ---
+      if (savedSSID.length() > 0)
+      { // Only attempt reconnect if we have saved credentials
+        WiFiModule::connectToWiFi(savedSSID.c_str(), savedPassword.c_str());
+        Serial.println("Reconnection attempt initiated.");
+      }
+      else
+      {
+        Serial.println("No saved WiFi credentials to use for reconnection.");
+        // Optionally, you could start AP mode here if you want to allow reconfiguration
+        // WiFiModule::startWiFiAP(); // Be cautious about starting AP in loop
+      }
     }
-    last_check_connected = millis() + 5000;
+    last_check_connected = millis() + 5000; // Check again in 5 seconds
   }
 
   lv_task_handler();
