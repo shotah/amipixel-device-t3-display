@@ -4,13 +4,13 @@
 #include <Arduino.h> // NOLINT(readability-magic-numbers)
 #include <WiFi.h>
 
-namespace WiFiModule
-{ // Add namespace declaration
+namespace WiFiModule { // Add namespace declaration
 
-    // --- Function Prototypes ---
-    void setupWiFi();
-    bool connectToWiFi(const char *ssid, const char *password);
-    void disconnectWiFi();
+// --- Function Prototypes ---
+void setupWiFi();
+bool connectToWiFi(const char *ssid, const char *password);
+void disconnectWiFi();
+void manageWiFiConnection();
 
 } // namespace WiFiModule
 

@@ -11,7 +11,7 @@ PLATFORMIO_CMD = pio                 # Command for PlatformIO CLI (usually 'pio'
 
 # --- Targets ---
 
-.PHONY: all build upload clean monitor py-pio-install deploy test compdb
+.PHONY: all build upload clean monitor py-pio-install deploy test compdb uploadfs deployfs
 
 all: build
 
@@ -22,6 +22,14 @@ build:
 upload:
 	@echo "Uploading AmiPixel to device (environment: $(PROJECT_ENV))"
 	@$(PLATFORMIO_CMD) run -t upload -e $(PROJECT_ENV)
+
+uploadfs:
+	@echo "Uploading AmiPixel filesystem image (SPIFFS) to device (environment: $(PROJECT_ENV))"
+	@$(PLATFORMIO_CMD) run -t uploadfs -e $(PROJECT_ENV)
+
+deployfs: upload uploadfs
+	@echo "Deploying AmiPixel firmware and filesystem (environment: $(PROJECT_ENV))"
+	@echo "Firmware and SPIFFS filesystem uploaded."
 
 clean:
 	@echo "Cleaning build artifacts (environment: $(PROJECT_ENV))"

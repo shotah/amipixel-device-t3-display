@@ -42,129 +42,101 @@ void setup();             // Keep setup prototype
 
 void setup()
 {
-  Serial.begin(115200);
-  delay(7000); // <---- ADD this delay for serial initialization
-  Serial.println("Starting Factory Example with Modular Code...");
+    Serial.begin(115200);
+    delay(7000); // <---- ADD this delay for serial initialization
+    Serial.println("Starting Factory Example with Modular Code...");
 
-  // --- SPIFFS File System Test ---  <--- Insert the SPIFFS code block HERE
-  if (!SPIFFS.begin(true))
-  {
-    Serial.println("SPIFFS Mount Failed");
-  }
-  else
-  {
-    Serial.println("SPIFFS Mount Success");
-    Serial.println("--- SPIFFS Root Directory Contents: ---");
-    File root = SPIFFS.open("/");
-    if (!root)
+    // --- SPIFFS File System Test ---  <--- Insert the SPIFFS code block HERE
+    if (!SPIFFS.begin(true))
     {
-      Serial.println("- Failed to open root directory");
+        Serial.println("SPIFFS Mount Failed");
     }
     else
     {
-      File file = root.openNextFile();
-      while (file)
-      {
-        Serial.print("- File: ");
-        Serial.println(file.name());
-        file = root.openNextFile();
-      }
-      Serial.println("--- End of SPIFFS Root Directory Contents ---");
+        Serial.println("SPIFFS Mount Success");
+        Serial.println("--- SPIFFS Root Directory Contents: ---");
+        File root = SPIFFS.open("/");
+        if (!root)
+        {
+            Serial.println("- Failed to open root directory");
+        }
+        else
+        {
+            File file = root.openNextFile();
+            while (file)
+            {
+                Serial.print("- File: ");
+                Serial.println(file.name());
+                file = root.openNextFile();
+            }
+            Serial.println("--- End of SPIFFS Root Directory Contents ---");
+        }
     }
-  }
-  // --- End SPIFFS File System Test ---
+    // --- End SPIFFS File System Test ---
 
-  bool rslt = false;
+    bool rslt = false;
 
-  // Automatically determine the access device
-  rslt = amoled.begin();
-  // --- Global variables ---  (Declaration can be here, instantiation MUST be
-  // after amoled.begin())
-  Adafruit_NeoPixel *pixels = NULL; // Global declaration - OK here
-  const BoardsConfigure_t *boards = amoled.getBoardsConfigure();
-  if (boards->pixelsPins != -1)
-  {
-    pixels = new Adafruit_NeoPixel(BOARD_PIXELS_NUM, boards->pixelsPins,
-                                   NEO_GRB + NEO_KHZ800);
-    pixels->begin(); // This initializes the NeoPixel library.
-    pixels->setBrightness(15);
-  }
-  Serial.println("============================================");
-  Serial.print("    Board Name:LilyGo AMOLED ");
-  Serial.println(amoled.getName());
-  Serial.println("============================================");
-
-  if (!rslt)
-  {
-    while (1)
+    // Automatically determine the access device
+    rslt = amoled.begin();
+    // --- Global variables ---  (Declaration can be here, instantiation MUST be
+    // after amoled.begin())
+    Adafruit_NeoPixel *pixels = NULL; // Global declaration - OK here
+    const BoardsConfigure_t *boards = amoled.getBoardsConfigure();
+    if (boards->pixelsPins != -1)
     {
-      Serial.println("The board model cannot be detected, please raise the "
-                     "Core Debug Level to an error");
-      delay(1000);
+        pixels = new Adafruit_NeoPixel(BOARD_PIXELS_NUM, boards->pixelsPins,
+                                       NEO_GRB + NEO_KHZ800);
+        pixels->begin(); // This initializes the NeoPixel library.
+        pixels->setBrightness(15);
     }
-  }
+    Serial.println("============================================");
+    Serial.print("    Board Name:LilyGo AMOLED ");
+    Serial.println(amoled.getName());
+    Serial.println("============================================");
 
-  // Register lvgl helper
-  beginLvglHelper(amoled);
+    if (!rslt)
+    {
+        while (1)
+        {
+            Serial.println("The board model cannot be detected, please raise the "
+                           "Core Debug Level to an error");
+            delay(1000);
+        }
+    }
 
-  // --- Module Setup ---
-  Serial.println("Setting up WiFi...");
-  WiFiModule::setupWiFi();         // Setup WiFi module
-  DateTime::setupDateTime(amoled); // Setup DateTime module
-  Weather::setupWeather();         // Setup Weather module
-  Coin::setupCoin();               // Setup Coin module
-  Button::setupButton(amoled,
-                      pixels); // Setup Button module, pass amoled instance
-  DisplayDriver::setupDisplayDriver(
-      amoled); // Setup Display Driver module, pass amoled
+    // Register lvgl helper
+    beginLvglHelper(amoled);
 
-  // Show certificate image
-  showCertification(3000);
+    // --- Module Setup ---
+    Serial.println("Setting up WiFi...");
+    WiFiModule::setupWiFi();         // Setup WiFi module
+    DateTime::setupDateTime(amoled); // Setup DateTime module
+    Weather::setupWeather();         // Setup Weather module
+    Coin::setupCoin();               // Setup Coin module
+    Button::setupButton(amoled,
+                        pixels); // Setup Button module, pass amoled instance
+    DisplayDriver::setupDisplayDriver(
+        amoled); // Setup Display Driver module, pass amoled
 
-  // Draw Factory GUI
-  factoryGUI(pixels);
+    // Show certificate image
+    showCertification(3000);
 
-  // Enable Watchdog
-  enableLoopWDT();
-  Serial.println("Setup complete. Entering loop().");
+    // Draw Factory GUI
+    factoryGUI(pixels);
+
+    // Enable Watchdog
+    enableLoopWDT();
+    Serial.println("Setup complete. Entering loop().");
 }
-
-uint32_t last_check_connected = 0;
 
 void loop()
 {
-  if (sleep_flag)
-  {
-    return; // If sleep_flag is set, exit loop (sleep handled in button module)
-  }
-  if (last_check_connected < millis())
-
-  {
-    if (WiFi.status() != WL_CONNECTED)
-
+    if (sleep_flag)
     {
-      Serial.println("WiFi Disconnected. Attempting to reconnect using saved credentials...");
-
-      // --- Retrieve saved SSID and password from Preferences ---
-      String savedSSID = preferences.getString("ssid", "");
-      String savedPassword = preferences.getString("password", "");
-
-      // --- Call the *new* connectToWiFi with saved credentials ---
-      if (savedSSID.length() > 0)
-      { // Only attempt reconnect if we have saved credentials
-        WiFiModule::connectToWiFi(savedSSID.c_str(), savedPassword.c_str());
-        Serial.println("Reconnection attempt initiated.");
-      }
-      else
-      {
-        Serial.println("No saved WiFi credentials to use for reconnection.");
-        // Optionally, you could start AP mode here if you want to allow reconfiguration
-        // WiFiModule::startWiFiAP(); // Be cautious about starting AP in loop
-      }
+        return; // If sleep_flag is set, exit loop (sleep handled in button module)
     }
-    last_check_connected = millis() + 5000; // Check again in 5 seconds
-  }
+    WiFiModule::manageWiFiConnection(); // Manage WiFi connection
 
-  lv_task_handler();
-  delay(1);
+    lv_task_handler();
+    delay(1);
 }

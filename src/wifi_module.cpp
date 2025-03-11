@@ -16,6 +16,7 @@ namespace WiFiModule
   bool wifi_setup_done = false;
   bool wifi_connected = false;
   void WiFiEvent(WiFiEvent_t event);
+  bool isWifiConnected() { return wifi_connected; }
 
   Preferences preferences; // For storing WiFi credentials persistently
   WebServer server(80);
@@ -58,7 +59,8 @@ namespace WiFiModule
       }
       else
       {
-        Serial.println("Failed to connect with saved credentials. Starting AP mode.");
+        Serial.println(
+            "Failed to connect with saved credentials. Starting AP mode.");
         startWiFiAP(); // Fallback to AP mode if connect fails
       }
     }
@@ -66,7 +68,8 @@ namespace WiFiModule
 
     {
       // No saved credentials, start in Access Point (AP) mode for configuration
-      Serial.println("No saved WiFi credentials. Starting AP mode for configuration.");
+      Serial.println(
+          "No saved WiFi credentials. Starting AP mode for configuration.");
       startWiFiAP();
     }
 
@@ -75,124 +78,146 @@ namespace WiFiModule
     Serial.printf("[WiFi-event] event: %d\n", event);
     switch (event) {
     case WIFI_EVENT_AP_START:
-  // WiFi access point started
-  Serial.println("WiFi AP started");
-  break;
+      // WiFi access point started
+      Serial.println("WiFi AP started");
+      break;
     case WIFI_EVENT_AP_STACONNECTED:
-  // Client connected to soft-AP
-  Serial.println("Client connected to AP");
-  break;
+      // Client connected to soft-AP
+      Serial.println("Client connected to AP");
+      break;
     case WIFI_EVENT_AP_STADISCONNECTED:
-  // Client disconnected from soft-AP
-  Serial.println("Client disconnected from AP");
-  break;
+      // Client disconnected from soft-AP
+      Serial.println("Client disconnected from AP");
+      break;
     case WIFI_EVENT_STA_START:
-  Serial.println("WiFi client started");
-  break;
+      Serial.println("WiFi client started");
+      break;
     case WIFI_EVENT_STA_CONNECTED:
-  Serial.println("WiFi connected");
-  wifi_connected = true;
-  break;
+      Serial.println("WiFi connected");
+      wifi_connected = true;
+      break;
     case WIFI_EVENT_STA_DISCONNECTED:
-  Serial.println("WiFi disconnected");
-  wifi_connected = false;
-  break;
+      Serial.println("WiFi disconnected");
+      wifi_connected = false;
+      break;
     case ARDUINO_EVENT_WIFI_STA_GOT_IP:
-  Serial.print("WiFi assigned IP address: ");
-  Serial.println(WiFi.localIP());
-  break;
+      Serial.print("WiFi assigned IP address: ");
+      Serial.println(WiFi.localIP());
+      break;
     default:
-  break;
+      break;
     } });
     WiFi.disconnect(); // Disconnect if already connected (in case of restart)
     wifi_setup_done = true;
     Serial.println(
         "WiFi Module Setup Done. Connecting will be attempted elsewhere.");
   }
-
   void startWiFiAP(void)
   {
-    Serial.println("Starting WiFi Access Point (AP) for configuration...");
+    Serial.println("Starting WiFi Access Point (AP) for web server test...");
     WiFi.mode(WIFI_AP);
-    WiFi.softAP(WiFiConfig::SSID); // Define WIFI_CONFIG_AP_SSID in constants.h
 
-    IPAddress apIP = WiFi.softAPIP();
-    Serial.print("AP IP address: ");
-    Serial.println(apIP);
+    IPAddress apIP(192, 168, 4, 1); // Static AP IP
+    IPAddress subnet(255, 255, 255, 0);
+    WiFi.softAPConfig(apIP, apIP, subnet); // Set static IP
+    WiFi.softAP(WiFiConfig::SSID);
 
-    // Set up DNS server for captive portal
-    dnsServer.start(53, "*", apIP); // Port 53, wildcard domain, AP IP
+    Serial.print("AP IP address (static): ");
+    Serial.println(apIP); // Should now print 192.168.4.1
 
     // --- Web Server Routes ---
-
-    // Route for the configuration page (wifi_config.htm)
-    PageElement wifiConfigPageElement("file:/wifi_config.htm");
-    PageBuilder wifiConfigPage("/", {wifiConfigPageElement});
-    wifiConfigPage.insert(server);
-
-    // Route to handle form submission (POST request to /config)
-    server.on("/config", HTTP_POST, []()
+    server.on("/", HTTP_GET, []()
               {
-    Serial.println("WiFi config form submitted...");
-    String ssid = server.arg("ssid");
-    String password = server.arg("password");
-
-    Serial.print("SSID received: ");
-    Serial.println(ssid);
-    Serial.print("Password received: ");
-    Serial.println(password);
-
-    if (ssid.length() > 0) {
-    // Save credentials to preferences
-    preferences.putString("ssid", ssid);
-    preferences.putString("password", password);
-    Serial.println("WiFi credentials saved to preferences.");
-
-    server.sendHeader("Location", "/", true); // Redirect back to config page
-    server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    server.sendHeader("Pragma", "no-cache");
-    server.sendHeader("Expires", "-1");
-    server.send(302, "text/plain",
-        "Redirecting to configuration page..."); // Redirect with
-                        // success message
-
-    delay(100); // Small delay to send response
-
-    connectToWiFi(ssid.c_str(),
-          password.c_str()); // Attempt to connect to WiFi
-
-      } else {
-    // Handle case where SSID is empty (error)
-    Serial.println("[Error] SSID cannot be empty.");
-    String errorResponse = "Error: SSID cannot be empty.";
-    server.sendHeader("Location", "/?error=" + errorResponse,
-          true); // Redirect back to config page with error
-    server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    server.sendHeader("Pragma", "no-cache");
-    server.sendHeader("Expires", "-1");
-    server.send(
-        302, "text/plain",
-        "Redirecting to configuration page with error..."); // Redirect with
-                        // error message
-      } });
-
-    // Route for handling 404 errors (Page Not Found) - using PageBuilder's 404
-    // handler
-    server.onNotFound([]()
-                      {
-                        PageElement notFoundPageElement(
-                            "file:/not_found.htm"); // Create PageElement for not_found.htm
-                        PageBuilder notFoundPage(
-                            "/notfound",
-                            {notFoundPageElement});  // Define a PageBuilder for /notfound (though
-                                                     // path doesn't really matter for 404)
-                        notFoundPage.insert(server); // Serve the not_found page
-                      });
-
-    // Start the web server
+                server.send(200, "text/plain", ""); // Send empty response
+              });
+    // server.enableKeepAlive(false); // REMOVE or COMMENT OUT this line - it's incorrect
     server.begin();
-    Serial.println("Web server started in AP mode.");
+    Serial.println("Web server started in AP mode (basic test).");
   }
+
+  // void startWiFiAP(void)
+  // {
+  //   Serial.println("Starting WiFi Access Point (AP) for configuration...");
+  //   WiFi.mode(WIFI_AP);
+  //   WiFi.softAP(WiFiConfig::SSID); // Define WIFI_CONFIG_AP_SSID in constants.h
+
+  //   IPAddress apIP = WiFi.softAPIP();
+  //   Serial.print("AP IP address: ");
+  //   Serial.println(apIP);
+
+  //   // Set up DNS server for captive portal
+  //   dnsServer.start(53, "*", apIP); // Port 53, wildcard domain, AP IP
+
+  //   // --- Web Server Routes ---
+
+  //   // Route for the configuration page (wifi_config.htm)
+  //   PageElement wifiConfigPageElement("file:/wifi_config.htm");
+  //   PageBuilder wifiConfigPage("/", {wifiConfigPageElement});
+  //   wifiConfigPage.insert(server);
+
+  //   // Route to handle form submission (POST request to /config)
+  //   server.on("/config", HTTP_POST, []()
+  //             {
+  //   Serial.println("WiFi config form submitted...");
+  //   String ssid = server.arg("ssid");
+  //   String password = server.arg("password");
+
+  //   Serial.print("SSID received: ");
+  //   Serial.println(ssid);
+  //   Serial.print("Password received: ");
+  //   Serial.println(password);
+
+  //   if (ssid.length() > 0) {
+  //     // Save credentials to preferences
+  //     preferences.putString("ssid", ssid);
+  //     preferences.putString("password", password);
+  //     Serial.println("WiFi credentials saved to preferences.");
+
+  //     server.sendHeader("Location", "/", true); // Redirect back to config page
+  //     server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  //     server.sendHeader("Pragma", "no-cache");
+  //     server.sendHeader("Expires", "-1");
+  //     server.send(302, "text/plain",
+  //                 "Redirecting to configuration page..."); // Redirect with
+  //                                                          // success message
+
+  //     delay(100); // Small delay to send response
+
+  //     connectToWiFi(ssid.c_str(),
+  //                   password.c_str()); // Attempt to connect to WiFi
+
+  //   } else {
+  //     // Handle case where SSID is empty (error)
+  //     Serial.println("[Error] SSID cannot be empty.");
+  //     String errorResponse = "Error: SSID cannot be empty.";
+  //     server.sendHeader("Location", "/?error=" + errorResponse,
+  //                       true); // Redirect back to config page with error
+  //     server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  //     server.sendHeader("Pragma", "no-cache");
+  //     server.sendHeader("Expires", "-1");
+  //     server.send(
+  //         302, "text/plain",
+  //         "Redirecting to configuration page with error..."); // Redirect with
+  //                                                             // error message
+  //   } });
+
+  //   // Route for handling 404 errors (Page Not Found) - using PageBuilder's 404
+  //   // handler
+  //   server.onNotFound([]()
+  //                     {
+  //                       PageElement notFoundPageElement(
+  //                           "file:/not_found.htm"); // Create PageElement for not_found.htm
+  //                       PageBuilder notFoundPage(
+  //                           "/notfound",
+  //                           {notFoundPageElement});  // Define a PageBuilder for /notfound (though
+  //                                                    // path doesn't really matter for 404)
+  //                       notFoundPage.insert(server); // Serve the not_found page
+  //                     });
+
+  //   // Start the web server
+  //   server.begin();
+  //   Serial.println("Web server started in AP mode.");
+  // }
 
   bool connectToWiFi(const char *ssid, const char *password)
   {
@@ -235,14 +260,40 @@ namespace WiFiModule
   }
 
   void disconnectWiFi()
-
   {
     WiFi.disconnect();
-    WiFi.removeEvent(WiFiEvent);
+    // WiFi.removeEvent(WiFiEvent);
     WiFi.mode(WIFI_OFF);
 
     Serial.println();
   };
 
-  bool isWifiConnected() { return wifi_connected; }
+  uint32_t last_wifi_check_ms = 0; // Static variable to track last check time
+
+  void manageWiFiConnection()
+  {
+    server.handleClient(); // **IMPORTANT: Call handleClient() unconditionally in every loop**
+    if (millis() - last_wifi_check_ms >= 5000)
+    { // Check every 5 seconds
+      last_wifi_check_ms = millis();
+      if (!isWifiConnected())
+      { // Use isWifiConnected() function
+        Serial.println("WiFi Disconnected. Attempting to reconnect using saved "
+                       "credentials...");
+        String savedSSID = preferences.getString("ssid", "");
+        String savedPassword = preferences.getString("password", "");
+        if (savedSSID.length() > 0)
+        {
+          connectToWiFi(savedSSID.c_str(),
+                        savedPassword.c_str()); // Use existing connectToWiFi
+          Serial.println("Reconnection attempt initiated.");
+        }
+        else
+        {
+          Serial.println("No saved WiFi credentials for reconnection.");
+        }
+      }
+    }
+  }
+
 } // namespace WiFiModule
