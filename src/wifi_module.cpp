@@ -120,52 +120,34 @@ namespace WiFiModule
     dnsServer.start(53, "*", apIP);
 
     // --- Web Server Routes - Using serveStatic directly ---
-
-    server.serveStatic("/", SPIFFS, "/wifi_config.htm");
-    server.serveStatic("/img/", SPIFFS, "/img/");
-    server.serveStatic("/js/", SPIFFS, "/js/");
-    server.serveStatic("/css/", SPIFFS, "/css/");
-
-    // Route for /config - Data processing only
-    server.on("/config", HTTP_POST, []()
-              {
-    String ssid = server.arg("ssid");
-    String password = server.arg("password");
-
-    if (ssid.length() > 0) {
-      preferences.begin("wifi-config", false);
-      preferences.putString("ssid", ssid);
-      preferences.putString("password", password);
-      preferences.end();
-
-      connectToWiFi(ssid.c_str(), password.c_str()); // Attempt connection
-
-      // Redirect to success page
-      server.sendHeader("Location", "/success", true);
-      server.send(302, "text/plain", ""); // Send redirect
-
-    } else {
-      // Redirect to error page with error message
-      String errorMsg = "Error: SSID cannot be empty.";
-      String errorUrl = "/error?error=" + urlEncode(errorMsg);
-      server.sendHeader("Location", errorUrl, true);
-      server.send(302, "text/plain", ""); // Send redirect
-    } });
-
     // New routes to handle WiFi scan and return SSIDs as JSON
     server.on("/scan-trigger", HTTP_GET, handleScanTriggerRequest);
     server.on("/ssids", HTTP_GET, handleGetSSIDsRequest);
+    server.on("/config", HTTP_POST, []()
+              {
+      String ssid = server.arg("ssid");
+      String password = server.arg("password");
+  
+      bool connectionSuccess = connectToWiFi(ssid.c_str(), password.c_str());
+  
+      if (connectionSuccess) {
+          server.sendHeader("Location", "/success.htm", true);
+  
+          // Save credentials only on successful connection
+          preferences.begin("wifi-config", false);
+          preferences.putString("ssid", ssid);
+          preferences.putString("password", password);
+          preferences.end();
+      } else {
+          String errorMsg = "Error: WiFi connection failed.";
+          String errorUrl = "/error.htm?error=" + urlEncode(errorMsg);
+          server.sendHeader("Location", errorUrl, true);
+      }
+      server.send(302, "text/plain", ""); });
 
-    // Route for success page
-    server.on("/success", HTTP_GET, []()
-              { server.send(200, "text/html", SPIFFS.open("/success.htm").readString()); });
+    // Serve static files from SPIFFS
+    server.serveStatic("/", SPIFFS, "/");
 
-    // Route for error page
-    server.on("/error", HTTP_GET, []()
-              { String error = server.arg("error");
-                String errorPage = SPIFFS.open("/error.htm").readString();
-                errorPage.replace("{{error}}", error);
-                server.send(200, "text/html", errorPage); });
     // Not Found
     server.onNotFound([]()
                       {
@@ -181,7 +163,7 @@ namespace WiFiModule
     Serial.println("Web server started in AP mode.");
   }
 
-  void connectToWiFi(const char *ssid, const char *password)
+  bool connectToWiFi(const char *ssid, const char *password)
   {
     Serial.println("Connecting to WiFi...");
     WiFi.mode(WIFI_STA);
@@ -197,17 +179,17 @@ namespace WiFiModule
 
     if (WiFi.status() == WL_CONNECTED)
     {
-      wifi_connected = true;
       Serial.println("");
       Serial.print("WiFi connected! IP address: ");
       Serial.println(WiFi.localIP());
+      return true;
     }
     else
     {
-      wifi_connected = false;
       Serial.println("");
       Serial.println("WiFi connection failed.");
       startWiFiAP(); // Re-start AP mode if connection fails
+      return false;
     }
   }
 

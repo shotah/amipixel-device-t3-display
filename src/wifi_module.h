@@ -9,7 +9,7 @@ namespace WiFiModule
 
     // --- Function Prototypes ---
     void setupWiFi();
-    void connectToWiFi(const char *ssid, const char *password);
+    bool connectToWiFi(const char *ssid, const char *password);
     void disconnectWiFi();
     void manageWiFiConnection();
 
