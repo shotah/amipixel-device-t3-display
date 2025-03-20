@@ -5,8 +5,7 @@
     <title>WiFi Configuration</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js"></script>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
@@ -48,12 +47,15 @@
         }
 
         document.addEventListener('DOMContentLoaded', function () {
+
             const errorParam = getParameterByName('error');
             const successParam = getParameterByName('success');
             const ssidDropdown = document.getElementById('ssid');
             const scanButton = document.getElementById('scanButton');
+
             const errorDiv = document.getElementById('error');
             const successDiv = document.getElementById('success');
+
             const passwordInput = document.getElementById('password');
             const passwordToggle = document.getElementById('password-toggle');
             const eyeIcon = document.getElementById('eye-icon');

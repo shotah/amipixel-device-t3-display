@@ -120,6 +120,14 @@ namespace WiFiModule
     dnsServer.start(53, "*", apIP);
 
     // --- Web Server Routes - Using serveStatic directly ---
+    server.serveStatic("/", SPIFFS, "/index.htm");
+    server.serveStatic("/img/", SPIFFS, "/img/");
+    server.serveStatic("/js/", SPIFFS, "/js/");
+    server.serveStatic("/css/", SPIFFS, "/css/");
+    server.serveStatic("/success.htm", SPIFFS, "/success.htm");
+    server.serveStatic("/error.htm", SPIFFS, "/error.htm");
+    server.serveStatic("/not_found", SPIFFS, "/not_found.htm");
+
     // New routes to handle WiFi scan and return SSIDs as JSON
     server.on("/scan-trigger", HTTP_GET, handleScanTriggerRequest);
     server.on("/ssids", HTTP_GET, handleGetSSIDsRequest);
@@ -145,19 +153,12 @@ namespace WiFiModule
       }
       server.send(302, "text/plain", ""); });
 
-    // Serve static files from SPIFFS
-    server.serveStatic("/", SPIFFS, "/");
-
     // Not Found
+    // Redirect all requests to /index.htm
     server.onNotFound([]()
                       {
-        if (!SPIFFS.exists("/not_found.htm"))
-        {
-            Serial.println("[WiFiModule] not_found.htm not found in SPIFFS!");
-            server.send(404, "text/plain", "404 Not Found");
-            return;
-        }
-        server.serveStatic("/", SPIFFS, "/not_found.htm"); });
+          server.sendHeader("Location", "/", true);
+          server.send(302, "text/plain", ""); });
 
     server.begin();
     Serial.println("Web server started in AP mode.");
