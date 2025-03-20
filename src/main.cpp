@@ -1,26 +1,24 @@
-
-#include "button_module.h" // Include Button module header
-#include "coin.h"          // Include Coin module header
+#include "button_module.h"
+#include "coin.h"
 #include "constants.h"
-#include "datetime_module.h" // Include DateTime module header
-#include "display_driver.h"  // Include Display Driver module header
+#include "datetime_module.h"
+#include "display_driver.h"
 #include "globals.h"
-#include "gui.h"         // Include GUI - keep this for UI setup
-#include "weather.h"     // Include Weather module header
-#include "wifi_module.h" // Include WiFi module header
-#include "zones.h"       // Include zones - keep this for timezone
+#include "gui.h"
+#include "weather.h"
+#include "wifi_module.h"
+#include "zones.h"
+#include "fs_handler.h" // Include fs_handler.h
 #include <Arduino.h>
 #include <LV_Helper.h>
 #include <LilyGo_AMOLED.h>
-#include <SPIFFS.h>
 #include <WiFi.h>
 #include <esp_sntp.h>
 #include <esp_wifi.h>
 #include <lvgl.h>
 #include <time.h>
-
-#include <AceButton.h>         // AceButton is used in button_module, but included here for global button definition (if needed temporarily)
-#include <Adafruit_NeoPixel.h> // NeoPixel is used in button_module, included here if needed temporarily
+#include <AceButton.h>
+#include <Adafruit_NeoPixel.h>
 
 using namespace ace_button;
 using namespace Constants;
@@ -43,50 +41,18 @@ void setup();             // Keep setup prototype
 void setup()
 {
     Serial.begin(115200);
-    delay(7000); // <---- ADD this delay for serial initialization
+    delay(7000);
     Serial.println("Starting Factory Example with Modular Code...");
-
-    // --- SPIFFS File System Test ---  <--- Insert the SPIFFS code block HERE
-    if (!SPIFFS.begin(true))
-    {
-        Serial.println("SPIFFS Mount Failed");
-    }
-    else
-    {
-        Serial.println("SPIFFS Mount Success");
-        Serial.println("--- SPIFFS Root Directory Contents: ---");
-        File root = SPIFFS.open("/");
-        if (!root)
-        {
-            Serial.println("- Failed to open root directory");
-        }
-        else
-        {
-            File file = root.openNextFile();
-            while (file)
-            {
-                Serial.print("- File: ");
-                Serial.println(file.name());
-                file = root.openNextFile();
-            }
-            Serial.println("--- End of SPIFFS Root Directory Contents ---");
-        }
-    }
-    // --- End SPIFFS File System Test ---
 
     bool rslt = false;
 
-    // Automatically determine the access device
     rslt = amoled.begin();
-    // --- Global variables ---  (Declaration can be here, instantiation MUST be
-    // after amoled.begin())
-    Adafruit_NeoPixel *pixels = NULL; // Global declaration - OK here
+    Adafruit_NeoPixel *pixels = NULL;
     const BoardsConfigure_t *boards = amoled.getBoardsConfigure();
     if (boards->pixelsPins != -1)
     {
-        pixels = new Adafruit_NeoPixel(BOARD_PIXELS_NUM, boards->pixelsPins,
-                                       NEO_GRB + NEO_KHZ800);
-        pixels->begin(); // This initializes the NeoPixel library.
+        pixels = new Adafruit_NeoPixel(BOARD_PIXELS_NUM, boards->pixelsPins, NEO_GRB + NEO_KHZ800);
+        pixels->begin();
         pixels->setBrightness(15);
     }
     Serial.println("============================================");
@@ -104,27 +70,32 @@ void setup()
         }
     }
 
-    // Register lvgl helper
     beginLvglHelper(amoled);
+
+    // --- Initialize Filesystem using FSHandler ---
+    if (FSHandler::setupFS())
+    {
+        Serial.println("[Main] SPIFFS Initialized by FSHandler.");
+        FSHandler::listFSContents(); // List contents after successful initialization
+    }
+    else
+    {
+        Serial.println("[Main] SPIFFS Initialization failed (FSHandler::setupFS() returned false)");
+    }
+    // --- End Filesystem Initialization ---
 
     // --- Module Setup ---
     Serial.println("Setting up WiFi...");
-    WiFiModule::setupWiFi();         // Setup WiFi module
-    DateTime::setupDateTime(amoled); // Setup DateTime module
-    Weather::setupWeather();         // Setup Weather module
-    Coin::setupCoin();               // Setup Coin module
-    Button::setupButton(amoled,
-                        pixels); // Setup Button module, pass amoled instance
-    DisplayDriver::setupDisplayDriver(
-        amoled); // Setup Display Driver module, pass amoled
+    WiFiModule::setupWiFi();
+    // DateTime::setupDateTime(amoled); // Setup DateTime module
+    // Weather::setupWeather();         // Setup Weather module
+    // Coin::setupCoin();               // Setup Coin module
+    Button::setupButton(amoled, pixels);
+    DisplayDriver::setupDisplayDriver(amoled);
 
-    // Show certificate image
     showCertification(3000);
-
-    // Draw Factory GUI
     factoryGUI(pixels);
 
-    // Enable Watchdog
     enableLoopWDT();
     Serial.println("Setup complete. Entering loop().");
 }
@@ -133,10 +104,9 @@ void loop()
 {
     if (sleep_flag)
     {
-        return; // If sleep_flag is set, exit loop (sleep handled in button module)
+        return;
     }
-    WiFiModule::manageWiFiConnection(); // Manage WiFi connection
-
+    WiFiModule::manageWiFiConnection();
     lv_task_handler();
     delay(1);
 }

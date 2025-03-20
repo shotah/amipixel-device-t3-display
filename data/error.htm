@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>WiFi Connection Error</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 50vh;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #007BFF;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            text-align: left;
+        }
+
+        select,
+        input[type="text"],
+        input[type="password"] {
+            /* Apply input styles to select too */
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 16px;
+            font-family: 'Roboto', sans-serif;
+        }
+
+
+        input[type="submit"],
+        button {
+            /* Style for submit and scan buttons */
+            background-color: #007BFF;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+            /* Add some space above the button */
+        }
+
+        input[type="submit"]:hover,
+        button:hover {
+            background-color: #0056b3;
+        }
+
+
+        .error,
+        .success {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .error {
+            background-color: #ffe0e0;
+            color: #ff0000;
+            border: 1px solid #ff0000;
+        }
+
+        .success {
+            background-color: #e0ffe0;
+            color: #008000;
+            border: 1px solid #008000;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>WiFi Connection Error</h1>
+        <p id="errorMessage">{{error}}</p>
+        <p>Please try again.</p>
+        <button id="tryAgainButton">Try Again</button>
+    </div>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        if (error) {
+            document.getElementById('errorMessage').textContent = decodeURIComponent(error);
+        }
+
+        document.getElementById('tryAgainButton').addEventListener('click', function () {
+            window.location.href = "/";
+        });
+    </script>
+</body>
+
+</html>

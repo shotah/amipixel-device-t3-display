@@ -13,6 +13,7 @@
                 "C:/Users/chris/.platformio/packages/framework-arduinoespressif32@3.20016.0/libraries/WiFiClientSecure/src",
                 "C:/Users/chris/.platformio/packages/framework-arduinoespressif32@3.20016.0/libraries/DNSServer/src",
                 "C:/Users/chris/.platformio/packages/framework-arduinoespressif32@3.20016.0/libraries/Preferences/src",
+                "C:/workspaces/amipixel-device-t3-display/.pio/libdeps/T-Display-AMOLED/ArduinoJson/src",
                 "C:/workspaces/amipixel-device-t3-display/.pio/libdeps/T-Display-AMOLED/PageBuilder/src",
                 "C:/Users/chris/.platformio/packages/framework-arduinoespressif32@3.20016.0/libraries/WebServer/src",
                 "C:/Users/chris/.platformio/packages/framework-arduinoespressif32@3.20016.0/libraries/WiFi/src",
@@ -273,6 +274,7 @@
                     "C:/Users/chris/.platformio/packages/framework-arduinoespressif32@3.20016.0/libraries/WiFiClientSecure/src",
                     "C:/Users/chris/.platformio/packages/framework-arduinoespressif32@3.20016.0/libraries/DNSServer/src",
                     "C:/Users/chris/.platformio/packages/framework-arduinoespressif32@3.20016.0/libraries/Preferences/src",
+                    "C:/workspaces/amipixel-device-t3-display/.pio/libdeps/T-Display-AMOLED/ArduinoJson/src",
                     "C:/workspaces/amipixel-device-t3-display/.pio/libdeps/T-Display-AMOLED/PageBuilder/src",
                     "C:/Users/chris/.platformio/packages/framework-arduinoespressif32@3.20016.0/libraries/WebServer/src",
                     "C:/Users/chris/.platformio/packages/framework-arduinoespressif32@3.20016.0/libraries/WiFi/src",
@@ -527,7 +529,7 @@
                 ]
             },
             "defines": [
-                "PLATFORMIO=60117",
+                "PLATFORMIO=60118",
                 "LILYGO_TDISPLAY_AMOLED_SERIES",
                 "ARDUINO_USB_MODE=1",
                 "ARDUINO_RUNNING_CORE=1",

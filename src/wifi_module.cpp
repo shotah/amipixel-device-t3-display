@@ -1,261 +1,263 @@
 #include "wifi_module.h"
-#include "Preferences.h" // For persistent storage - Corrected include
-#include "constants.h"
-#include <DNSServer.h>   // For Captive Portal DNS
-#include <PageBuilder.h> // PageBuilder library
-#include <SPIFFS.h>      // For SPIFFS filesystem access
-#include <WebServer.h>   // ESP32 WebServer library
+#include "wifi_scanner.h"
 #include <WiFi.h>
-#include <esp_event.h> // Include the header file for WiFi events
-#include <esp_wifi.h>  // Include the header file for WiFi event definitions
-
-using namespace Constants;
+#include <WebServer.h>
+#include <DNSServer.h>
+#include "Preferences.h"
+#include "constants.h"
+#include <SPIFFS.h>
+#include "fs_handler.h"
+#include <ArduinoJson.h>
 
 namespace WiFiModule
 {
+
   bool wifi_setup_done = false;
   bool wifi_connected = false;
+  bool sleep_flag = false;
+  bool getSleepFlag() { return sleep_flag; }
+  void setSleepFlag(bool flag) { sleep_flag = flag; }
+
   void WiFiEvent(WiFiEvent_t event);
   bool isWifiConnected() { return wifi_connected; }
 
   Preferences preferences; // For storing WiFi credentials persistently
   WebServer server(80);
-  // WebServer instance on port 80
-  PageBuilder pageBuilder; // PageBuilder instance
   DNSServer dnsServer;
-  // DNS Server for captive portal
 
-  void startWiFiAP(); // Forward declaration
+  void startWiFiAP();
+  String scanWiFiNetworks();
 
   void setupWiFi()
   {
     Serial.println("WiFi Module Setup Started.");
 
-    // Initialize Preferences for storing WiFi credentials
-    if (!preferences.begin("wifi-config",
-                           false))
+    WiFi.onEvent(WiFiEvent);
 
-    { // "wifi-config" is the namespace
-      Serial.println("[Error] Preferences initialization failed!");
+    preferences.begin("wifi-config", false);
+
+    // --- Add this section to clear saved credentials ---
+    if (preferences.getString("ssid", "").length() > 0)
+    {
+      Serial.println("Clearing saved WiFi credentials.");
+      preferences.remove("ssid");
+      preferences.remove("password");
     }
+    // --- End of credential clearing ---
 
-    String savedSSID =
-        preferences.getString("ssid", ""); // "" is the default value if not found
+    String savedSSID = preferences.getString("ssid", "");
     String savedPassword = preferences.getString("password", "");
+    preferences.end();
 
     if (savedSSID.length() > 0)
-
     {
-      // We have saved credentials, try to connect in station mode
       Serial.print("Saved WiFi credentials found. Attempting to connect to: ");
       Serial.println(savedSSID);
-      if (connectToWiFi(
-              savedSSID.c_str(),
-              savedPassword.c_str())) // Try connecting with saved credentials
+      connectToWiFi(savedSSID.c_str(), savedPassword.c_str());
+    }
+    else
+    {
+      Serial.println("No saved WiFi credentials. Starting AP mode for configuration.");
+      startWiFiAP();
+    }
+    wifi_setup_done = true;
+    Serial.println("WiFi Module Setup Done. Connecting will be attempted elsewhere.");
+  }
 
+  void handleScanTriggerRequest()
+  {
+    Serial.println("[WiFiModule] /scan-trigger request received.");
+    WiFiScanner::startScan();
+    server.send(200, "text/plain", "Scan triggered");
+  }
+
+  void handleGetSSIDsRequest()
+  {
+    Serial.println("[WiFiModule] /ssids request received.");
+    server.send(200, "application/json", WiFiScanner::getScanResultsJson());
+  }
+
+  void manageWiFiConnection()
+  {
+    server.handleClient();
+    dnsServer.processNextRequest();
+    WiFiScanner::handleScan();
+  }
+
+  String urlEncode(const String &str)
+  {
+    String encodedStr = "";
+    for (int i = 0; i < str.length(); i++)
+    {
+      if (isAlphaNumeric(str.charAt(i)) || str.charAt(i) == '-' || str.charAt(i) == '_' || str.charAt(i) == '.')
       {
-        Serial.println("Successfully connected using saved credentials.");
-        return; // WiFi connected, setup is done, exit setupWiFi()
+        encodedStr += str.charAt(i);
+      }
+      else if (str.charAt(i) == ' ')
+      {
+        encodedStr += "%20";
       }
       else
       {
-        Serial.println(
-            "Failed to connect with saved credentials. Starting AP mode.");
-        startWiFiAP(); // Fallback to AP mode if connect fails
+        char buf[4];
+        sprintf(buf, "%%%02X", str.charAt(i));
+        encodedStr += buf;
       }
     }
-    else
-
-    {
-      // No saved credentials, start in Access Point (AP) mode for configuration
-      Serial.println(
-          "No saved WiFi credentials. Starting AP mode for configuration.");
-      startWiFiAP();
-    }
-
-    WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info)
-                 {
-    Serial.printf("[WiFi-event] event: %d\n", event);
-    switch (event) {
-    case WIFI_EVENT_AP_START:
-      // WiFi access point started
-      Serial.println("WiFi AP started");
-      break;
-    case WIFI_EVENT_AP_STACONNECTED:
-      // Client connected to soft-AP
-      Serial.println("Client connected to AP");
-      break;
-    case WIFI_EVENT_AP_STADISCONNECTED:
-      // Client disconnected from soft-AP
-      Serial.println("Client disconnected from AP");
-      break;
-    case WIFI_EVENT_STA_START:
-      Serial.println("WiFi client started");
-      break;
-    case WIFI_EVENT_STA_CONNECTED:
-      Serial.println("WiFi connected");
-      wifi_connected = true;
-      break;
-    case WIFI_EVENT_STA_DISCONNECTED:
-      Serial.println("WiFi disconnected");
-      wifi_connected = false;
-      break;
-    case ARDUINO_EVENT_WIFI_STA_GOT_IP:
-      Serial.print("WiFi assigned IP address: ");
-      Serial.println(WiFi.localIP());
-      break;
-    default:
-      break;
-    } });
-    WiFi.disconnect(); // Disconnect if already connected (in case of restart)
-    wifi_setup_done = true;
-    Serial.println(
-        "WiFi Module Setup Done. Connecting will be attempted elsewhere.");
+    return encodedStr;
   }
-  void startWiFiAP(void)
+
+  void startWiFiAP()
   {
-    Serial.println("Starting WiFi Access Point (AP) for web server test...");
+    Serial.println("Starting WiFi Access Point (AP) for configuration...");
     WiFi.mode(WIFI_AP);
+    WiFi.softAP(Constants::WiFiConfig::SSID); // Use SSID from constants.h
 
-    IPAddress apIP(192, 168, 4, 1); // Static AP IP
-    IPAddress subnet(255, 255, 255, 0);
-    WiFi.softAPConfig(apIP, apIP, subnet); // Set static IP
-    WiFi.softAP(WiFiConfig::SSID);
+    IPAddress apIP = WiFi.softAPIP();
+    Serial.print("AP IP address: ");
+    Serial.println(apIP);
 
-    Serial.print("AP IP address (static): ");
-    Serial.println(apIP); // Should now print 192.168.4.1
+    dnsServer.start(53, "*", apIP);
 
-    // --- Web Server Routes ---
-    server.on("/", HTTP_GET, []()
+    // --- Web Server Routes - Using serveStatic directly ---
+
+    server.serveStatic("/", SPIFFS, "/wifi_config.htm");
+    server.serveStatic("/img/", SPIFFS, "/img/");
+    server.serveStatic("/js/", SPIFFS, "/js/");
+    server.serveStatic("/css/", SPIFFS, "/css/");
+
+    // Route for /config - Data processing only
+    server.on("/config", HTTP_POST, []()
               {
-                server.send(200, "text/plain", ""); // Send empty response
-              });
-    // server.enableKeepAlive(false); // REMOVE or COMMENT OUT this line - it's incorrect
+    String ssid = server.arg("ssid");
+    String password = server.arg("password");
+
+    if (ssid.length() > 0) {
+      preferences.begin("wifi-config", false);
+      preferences.putString("ssid", ssid);
+      preferences.putString("password", password);
+      preferences.end();
+
+      connectToWiFi(ssid.c_str(), password.c_str()); // Attempt connection
+
+      // Redirect to success page
+      server.sendHeader("Location", "/success", true);
+      server.send(302, "text/plain", ""); // Send redirect
+
+    } else {
+      // Redirect to error page with error message
+      String errorMsg = "Error: SSID cannot be empty.";
+      String errorUrl = "/error?error=" + urlEncode(errorMsg);
+      server.sendHeader("Location", errorUrl, true);
+      server.send(302, "text/plain", ""); // Send redirect
+    } });
+
+    // New routes to handle WiFi scan and return SSIDs as JSON
+    server.on("/scan-trigger", HTTP_GET, handleScanTriggerRequest);
+    server.on("/ssids", HTTP_GET, handleGetSSIDsRequest);
+
+    // Route for success page
+    server.on("/success", HTTP_GET, []()
+              { server.send(200, "text/html", SPIFFS.open("/success.htm").readString()); });
+
+    // Route for error page
+    server.on("/error", HTTP_GET, []()
+              { String error = server.arg("error");
+                String errorPage = SPIFFS.open("/error.htm").readString();
+                errorPage.replace("{{error}}", error);
+                server.send(200, "text/html", errorPage); });
+    // Not Found
+    server.onNotFound([]()
+                      {
+        if (!SPIFFS.exists("/not_found.htm"))
+        {
+            Serial.println("[WiFiModule] not_found.htm not found in SPIFFS!");
+            server.send(404, "text/plain", "404 Not Found");
+            return;
+        }
+        server.serveStatic("/", SPIFFS, "/not_found.htm"); });
+
     server.begin();
-    Serial.println("Web server started in AP mode (basic test).");
+    Serial.println("Web server started in AP mode.");
   }
 
-  // void startWiFiAP(void)
-  // {
-  //   Serial.println("Starting WiFi Access Point (AP) for configuration...");
-  //   WiFi.mode(WIFI_AP);
-  //   WiFi.softAP(WiFiConfig::SSID); // Define WIFI_CONFIG_AP_SSID in constants.h
-
-  //   IPAddress apIP = WiFi.softAPIP();
-  //   Serial.print("AP IP address: ");
-  //   Serial.println(apIP);
-
-  //   // Set up DNS server for captive portal
-  //   dnsServer.start(53, "*", apIP); // Port 53, wildcard domain, AP IP
-
-  //   // --- Web Server Routes ---
-
-  //   // Route for the configuration page (wifi_config.htm)
-  //   PageElement wifiConfigPageElement("file:/wifi_config.htm");
-  //   PageBuilder wifiConfigPage("/", {wifiConfigPageElement});
-  //   wifiConfigPage.insert(server);
-
-  //   // Route to handle form submission (POST request to /config)
-  //   server.on("/config", HTTP_POST, []()
-  //             {
-  //   Serial.println("WiFi config form submitted...");
-  //   String ssid = server.arg("ssid");
-  //   String password = server.arg("password");
-
-  //   Serial.print("SSID received: ");
-  //   Serial.println(ssid);
-  //   Serial.print("Password received: ");
-  //   Serial.println(password);
-
-  //   if (ssid.length() > 0) {
-  //     // Save credentials to preferences
-  //     preferences.putString("ssid", ssid);
-  //     preferences.putString("password", password);
-  //     Serial.println("WiFi credentials saved to preferences.");
-
-  //     server.sendHeader("Location", "/", true); // Redirect back to config page
-  //     server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  //     server.sendHeader("Pragma", "no-cache");
-  //     server.sendHeader("Expires", "-1");
-  //     server.send(302, "text/plain",
-  //                 "Redirecting to configuration page..."); // Redirect with
-  //                                                          // success message
-
-  //     delay(100); // Small delay to send response
-
-  //     connectToWiFi(ssid.c_str(),
-  //                   password.c_str()); // Attempt to connect to WiFi
-
-  //   } else {
-  //     // Handle case where SSID is empty (error)
-  //     Serial.println("[Error] SSID cannot be empty.");
-  //     String errorResponse = "Error: SSID cannot be empty.";
-  //     server.sendHeader("Location", "/?error=" + errorResponse,
-  //                       true); // Redirect back to config page with error
-  //     server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  //     server.sendHeader("Pragma", "no-cache");
-  //     server.sendHeader("Expires", "-1");
-  //     server.send(
-  //         302, "text/plain",
-  //         "Redirecting to configuration page with error..."); // Redirect with
-  //                                                             // error message
-  //   } });
-
-  //   // Route for handling 404 errors (Page Not Found) - using PageBuilder's 404
-  //   // handler
-  //   server.onNotFound([]()
-  //                     {
-  //                       PageElement notFoundPageElement(
-  //                           "file:/not_found.htm"); // Create PageElement for not_found.htm
-  //                       PageBuilder notFoundPage(
-  //                           "/notfound",
-  //                           {notFoundPageElement});  // Define a PageBuilder for /notfound (though
-  //                                                    // path doesn't really matter for 404)
-  //                       notFoundPage.insert(server); // Serve the not_found page
-  //                     });
-
-  //   // Start the web server
-  //   server.begin();
-  //   Serial.println("Web server started in AP mode.");
-  // }
-
-  bool connectToWiFi(const char *ssid, const char *password)
+  void connectToWiFi(const char *ssid, const char *password)
   {
-    WiFi.mode(WIFI_STA); // Station mode (connect to existing WiFi)
+    Serial.println("Connecting to WiFi...");
+    WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
 
-    Serial.print("Connecting to WiFi SSID: ");
-    Serial.println(ssid);
-
     int retries = 0;
-    while (WiFi.status() != WL_CONNECTED &&
-           retries < WiFiConfig::WIFI_MAX_CONNECT_RETRIES)
-
+    while (WiFi.status() != WL_CONNECTED && retries < Constants::WiFiConfig::WIFI_MAX_CONNECT_RETRIES)
     {
-      delay(1000);
+      delay(500);
       Serial.print(".");
       retries++;
     }
 
     if (WiFi.status() == WL_CONNECTED)
-
     {
-      Serial.println("\nWiFi Connected!");
-      Serial.print("IP address: ");
-      Serial.println(WiFi.localIP());
       wifi_connected = true;
-      // Stop AP mode and DNS server if connected in station mode
-      WiFi.softAPdisconnect(true); // Disconnect AP interface
-      dnsServer.stop();
-      Serial.println("WiFi AP and DNS server stopped.");
-      return true; // Indicate successful connection
+      Serial.println("");
+      Serial.print("WiFi connected! IP address: ");
+      Serial.println(WiFi.localIP());
     }
     else
-
     {
-      Serial.println("\n[Error] WiFi connection failed after multiple retries.");
       wifi_connected = false;
-      return false; // Indicate connection failure
+      Serial.println("");
+      Serial.println("WiFi connection failed.");
+      startWiFiAP(); // Re-start AP mode if connection fails
+    }
+  }
+
+  void WiFiEvent(WiFiEvent_t event)
+  {
+    String savedSSID;
+    String savedPassword;
+
+    switch (event)
+    {
+    case WIFI_EVENT_STA_START:
+      Serial.println("[WiFi-event] STA Started");
+      break;
+    case WIFI_EVENT_STA_DISCONNECTED:
+      wifi_connected = false;
+      Serial.println("[WiFi-event] STA Disconnected");
+      Serial.println("Attempting to reconnect in Station mode...");
+      preferences.begin("wifi-config", false);
+      savedSSID = preferences.getString("ssid", "");
+      savedPassword = preferences.getString("password", "");
+      preferences.end();
+      connectToWiFi(savedSSID.c_str(), savedPassword.c_str()); // Reconnect using saved credentials
+      break;
+    case WIFI_EVENT_STA_CONNECTED:
+      Serial.println("[WiFi-event] STA Connected");
+      break;
+    case ARDUINO_EVENT_WIFI_STA_GOT_IP:
+      Serial.print("[WiFi-event] STA Got IP: ");
+      Serial.println(WiFi.localIP());
+      wifi_connected = true;
+      break;
+    case ARDUINO_EVENT_WIFI_STA_LOST_IP:
+      wifi_connected = false;
+      Serial.println("[WiFi-event] STA Lost IP");
+      break;
+    case WIFI_EVENT_AP_START:
+      Serial.println("[WiFi-event] AP Started");
+      break;
+    case WIFI_EVENT_AP_STOP:
+      Serial.println("[WiFi-event] AP Stopped");
+      break;
+    case WIFI_EVENT_AP_STACONNECTED:
+      Serial.println("[WiFi-event] Client connected to AP");
+      break;
+    case WIFI_EVENT_AP_STADISCONNECTED:
+      Serial.println("[WiFi-event] Client disconnected from AP");
+      break;
+    default:
+      Serial.printf("[WiFi-event] event: %d\n", event);
+      break;
     }
   }
 
@@ -267,33 +269,5 @@ namespace WiFiModule
 
     Serial.println();
   };
-
-  uint32_t last_wifi_check_ms = 0; // Static variable to track last check time
-
-  void manageWiFiConnection()
-  {
-    server.handleClient(); // **IMPORTANT: Call handleClient() unconditionally in every loop**
-    if (millis() - last_wifi_check_ms >= 5000)
-    { // Check every 5 seconds
-      last_wifi_check_ms = millis();
-      if (!isWifiConnected())
-      { // Use isWifiConnected() function
-        Serial.println("WiFi Disconnected. Attempting to reconnect using saved "
-                       "credentials...");
-        String savedSSID = preferences.getString("ssid", "");
-        String savedPassword = preferences.getString("password", "");
-        if (savedSSID.length() > 0)
-        {
-          connectToWiFi(savedSSID.c_str(),
-                        savedPassword.c_str()); // Use existing connectToWiFi
-          Serial.println("Reconnection attempt initiated.");
-        }
-        else
-        {
-          Serial.println("No saved WiFi credentials for reconnection.");
-        }
-      }
-    }
-  }
 
 } // namespace WiFiModule
