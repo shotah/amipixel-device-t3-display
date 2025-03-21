@@ -1,9 +1,9 @@
 
 #include "gui.h"
-#include "coin.h" // Include Coin module header
+#include "coin.h"
 #include "constants.h"
 #include "globals.h"
-#include "weather.h" // Include Weather module header
+#include "weather.h"
 #include <Adafruit_NeoPixel.h>
 #include <LilyGo_AMOLED.h>
 #include <WiFi.h>
@@ -24,7 +24,7 @@ LV_IMG_DECLARE(icon_cloudy);
 LV_IMG_DECLARE(icon_thunderstorm);
 // LV_IMG_DECLARE(gif_rabbit);
 // TODO: replace with REAL gif
-LV_IMG_DECLARE(gif_falling_over);
+LV_IMG_DECLARE(gif_cat);
 
 LV_IMG_DECLARE(icon_battery);
 LV_IMG_DECLARE(icon_cpu);
@@ -193,7 +193,7 @@ void createTimeUI(lv_obj_t *parent)
   lv_obj_t *gif = lv_gif_create(time_cont);
   // lv_gif_set_src(gif, &gif_rabbit);
   // TODO: replace with real gif
-  lv_gif_set_src(gif, &gif_falling_over);
+  lv_gif_set_src(gif, &gif_cat);
 
   lv_obj_align_to(gif, time_cont, LV_ALIGN_BOTTOM_RIGHT, -10, -10);
 

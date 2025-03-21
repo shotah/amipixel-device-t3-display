@@ -70,11 +70,11 @@ if __name__ == "__main__":
     # pip install Jinja2
     script_dir = os.path.dirname(os.path.abspath(__file__))
     bytes_per_line = 13
-    file_names = ["falling_over"]
+    file_names = ["cat"]
 
     for name in file_names:
         # Falling Over Animation
         input_gif_file = os.path.join(script_dir, f"{name}.gif")
-        output_c_file = os.path.join(script_dir, f"{name}_anim.c")
+        output_c_file = os.path.join(script_dir, f"gif_{name}.c")
         c_array_name = f"{name}"
         gif_to_c_array(input_gif_file, output_c_file, c_array_name, bytes_per_line)
