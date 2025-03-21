@@ -2,8 +2,8 @@
 #define WIFI_SCANNER_H
 
 #include <Arduino.h>
-#include <WiFi.h>
 #include <ArduinoJson.h>
+#include <WiFi.h>
 
 namespace WiFiScanner
 {

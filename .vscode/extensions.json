@@ -8,7 +8,8 @@
         "ms-vscode.makefile-tools",
         "piskel.piskel",
         "platformio.platformio-ide",
-        "vscode-icons-team.vscode-icons"
+        "vscode-icons-team.vscode-icons",
+        "formulahendry.code-runner"
     ],
     "unwantedRecommendations": [
         "christian-kohler.npm-intellisense",

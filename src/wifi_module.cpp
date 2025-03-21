@@ -1,13 +1,13 @@
 #include "wifi_module.h"
-#include "wifi_scanner.h"
-#include <WiFi.h>
-#include <WebServer.h>
-#include <DNSServer.h>
 #include "Preferences.h"
 #include "constants.h"
-#include <SPIFFS.h>
 #include "fs_handler.h"
+#include "wifi_scanner.h"
 #include <ArduinoJson.h>
+#include <DNSServer.h>
+#include <SPIFFS.h>
+#include <WebServer.h>
+#include <WiFi.h>
 
 namespace WiFiModule
 {
@@ -57,11 +57,13 @@ namespace WiFiModule
     }
     else
     {
-      Serial.println("No saved WiFi credentials. Starting AP mode for configuration.");
+      Serial.println(
+          "No saved WiFi credentials. Starting AP mode for configuration.");
       startWiFiAP();
     }
     wifi_setup_done = true;
-    Serial.println("WiFi Module Setup Done. Connecting will be attempted elsewhere.");
+    Serial.println(
+        "WiFi Module Setup Done. Connecting will be attempted elsewhere.");
   }
 
   void handleScanTriggerRequest()
@@ -89,7 +91,8 @@ namespace WiFiModule
     String encodedStr = "";
     for (int i = 0; i < str.length(); i++)
     {
-      if (isAlphaNumeric(str.charAt(i)) || str.charAt(i) == '-' || str.charAt(i) == '_' || str.charAt(i) == '.')
+      if (isAlphaNumeric(str.charAt(i)) || str.charAt(i) == '-' ||
+          str.charAt(i) == '_' || str.charAt(i) == '.')
       {
         encodedStr += str.charAt(i);
       }
@@ -133,32 +136,32 @@ namespace WiFiModule
     server.on("/ssids", HTTP_GET, handleGetSSIDsRequest);
     server.on("/config", HTTP_POST, []()
               {
-      String ssid = server.arg("ssid");
-      String password = server.arg("password");
-  
-      bool connectionSuccess = connectToWiFi(ssid.c_str(), password.c_str());
-  
-      if (connectionSuccess) {
-          server.sendHeader("Location", "/success.htm", true);
-  
-          // Save credentials only on successful connection
-          preferences.begin("wifi-config", false);
-          preferences.putString("ssid", ssid);
-          preferences.putString("password", password);
-          preferences.end();
-      } else {
-          String errorMsg = "Error: WiFi connection failed.";
-          String errorUrl = "/error.htm?error=" + urlEncode(errorMsg);
-          server.sendHeader("Location", errorUrl, true);
-      }
-      server.send(302, "text/plain", ""); });
+    String ssid = server.arg("ssid");
+    String password = server.arg("password");
+
+    bool connectionSuccess = connectToWiFi(ssid.c_str(), password.c_str());
+
+    if (connectionSuccess) {
+      server.sendHeader("Location", "/success.htm", true);
+
+      // Save credentials only on successful connection
+      preferences.begin("wifi-config", false);
+      preferences.putString("ssid", ssid);
+      preferences.putString("password", password);
+      preferences.end();
+    } else {
+      String errorMsg = "Error: WiFi connection failed.";
+      String errorUrl = "/error.htm?error=" + urlEncode(errorMsg);
+      server.sendHeader("Location", errorUrl, true);
+    }
+    server.send(302, "text/plain", ""); });
 
     // Not Found
     // Redirect all requests to /index.htm
     server.onNotFound([]()
                       {
-          server.sendHeader("Location", "/", true);
-          server.send(302, "text/plain", ""); });
+    server.sendHeader("Location", "/", true);
+    server.send(302, "text/plain", ""); });
 
     server.begin();
     Serial.println("Web server started in AP mode.");
@@ -171,7 +174,8 @@ namespace WiFiModule
     WiFi.begin(ssid, password);
 
     int retries = 0;
-    while (WiFi.status() != WL_CONNECTED && retries < Constants::WiFiConfig::WIFI_MAX_CONNECT_RETRIES)
+    while (WiFi.status() != WL_CONNECTED &&
+           retries < Constants::WiFiConfig::WIFI_MAX_CONNECT_RETRIES)
     {
       delay(500);
       Serial.print(".");
@@ -212,7 +216,8 @@ namespace WiFiModule
       savedSSID = preferences.getString("ssid", "");
       savedPassword = preferences.getString("password", "");
       preferences.end();
-      connectToWiFi(savedSSID.c_str(), savedPassword.c_str()); // Reconnect using saved credentials
+      connectToWiFi(savedSSID.c_str(),
+                    savedPassword.c_str()); // Reconnect using saved credentials
       break;
     case WIFI_EVENT_STA_CONNECTED:
       Serial.println("[WiFi-event] STA Connected");

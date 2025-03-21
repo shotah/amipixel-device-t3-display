@@ -22,7 +22,9 @@ LV_IMG_DECLARE(icon_cloudy_sun);
 LV_IMG_DECLARE(icon_sun);
 LV_IMG_DECLARE(icon_cloudy);
 LV_IMG_DECLARE(icon_thunderstorm);
-LV_IMG_DECLARE(gif_rabbit);
+// LV_IMG_DECLARE(gif_rabbit);
+// TODO: replace with REAL gif
+LV_IMG_DECLARE(gif_falling_over);
 
 LV_IMG_DECLARE(icon_battery);
 LV_IMG_DECLARE(icon_cpu);
@@ -47,7 +49,7 @@ static lv_obj_t *week_label;
 static lv_obj_t *month_label;
 static bool colon;
 const char *week_char[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-const char *month_char[] = {"Jan", "Feb", "Mar",  "Apr", "May", "Jun",
+const char *month_char[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
                             "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"};
 static lv_obj_t *tileview;
 extern Adafruit_NeoPixel *pixels;
@@ -63,14 +65,18 @@ CoinMarketCapApiSubsribe coinSubsribe[] = {
 
 void createPaintUI(lv_obj_t *parent);
 
-static void update_date(lv_timer_t *e) {
+static void update_date(lv_timer_t *e)
+{
   struct tm timeinfo;
   time_t now;
 
-  if (amoled.hasRTC()) {
+  if (amoled.hasRTC())
+  {
     // When a real-time clock chip is present, the hardware time is used
     amoled.getDateTime(&timeinfo);
-  } else {
+  }
+  else
+  {
     // When the real-time clock chip does not exist, the ESP32 internal time is
     // used
     time(&now);
@@ -83,12 +89,14 @@ static void update_date(lv_timer_t *e) {
   lv_label_set_text_fmt(day_label, "%d", timeinfo.tm_mday);
   lv_label_set_text_fmt(week_label, "%s", week_char[timeinfo.tm_wday]);
   lv_label_set_text_fmt(month_label, "%s", month_char[timeinfo.tm_mon]);
-  if (pageId == 3) {
+  if (pageId == 3)
+  {
     lv_msg_send(MessageIDs::TEMPERATURE_MSG_ID, NULL);
   }
 }
 
-void createDisplayBadPixelsTest(lv_obj_t *parent) {
+void createDisplayBadPixelsTest(lv_obj_t *parent)
+{
   lv_obj_t *cont = lv_obj_create(parent);
   lv_obj_set_size(cont, lv_pct(100), lv_pct(150));
   lv_obj_set_style_bg_color(cont, lv_color_black(), LV_PART_MAIN);
@@ -120,7 +128,8 @@ void createDisplayBadPixelsTest(lv_obj_t *parent) {
       lv_color_make(255, 0, 0), lv_color_make(0, 255, 0),
       lv_color_make(0, 0, 255), lv_color_make(255, 255, 255),
       lv_color_make(0, 0, 0)};
-  for (int i = 0; i < sizeof(txt) / sizeof(*txt); ++i) {
+  for (int i = 0; i < sizeof(txt) / sizeof(*txt); ++i)
+  {
     lv_obj_t *btn1 = lv_btn_create(btns_cont);
     lv_obj_set_size(btn1, lv_pct(18), 70);
     lv_obj_t *label = lv_label_create(btn1);
@@ -130,7 +139,8 @@ void createDisplayBadPixelsTest(lv_obj_t *parent) {
 
     lv_obj_add_event_cb(
         btn1,
-        [](lv_event_t *e) {
+        [](lv_event_t *e)
+        {
           lv_obj_t *bg =
               (lv_obj_t *)lv_obj_get_user_data(lv_event_get_target(e));
           lv_color_t *color = (lv_color_t *)lv_event_get_user_data(e);
@@ -140,7 +150,8 @@ void createDisplayBadPixelsTest(lv_obj_t *parent) {
   }
 }
 
-void createTimeUI(lv_obj_t *parent) {
+void createTimeUI(lv_obj_t *parent)
+{
   lv_obj_set_scroll_dir(parent, LV_DIR_NONE);
   // TIME
   lv_obj_t *time_cont = lv_obj_create(parent);
@@ -157,9 +168,12 @@ void createTimeUI(lv_obj_t *parent) {
   lv_obj_set_style_text_font(time_label, &font_ali_70, 0);
   lv_obj_set_style_pad_top(time_label, 15, 0);
 
-  if (lv_disp_get_ver_res(NULL) > 300) {
+  if (lv_disp_get_ver_res(NULL) > 300)
+  {
     lv_obj_align(time_label, LV_ALIGN_CENTER, 0, 0);
-  } else {
+  }
+  else
+  {
     lv_obj_align(time_label, LV_ALIGN_TOP_MID, 0, 20);
   }
 
@@ -177,7 +191,10 @@ void createTimeUI(lv_obj_t *parent) {
 
   // show cutie
   lv_obj_t *gif = lv_gif_create(time_cont);
-  lv_gif_set_src(gif, &gif_rabbit);
+  // lv_gif_set_src(gif, &gif_rabbit);
+  // TODO: replace with real gif
+  lv_gif_set_src(gif, &gif_falling_over);
+
   lv_obj_align_to(gif, time_cont, LV_ALIGN_BOTTOM_RIGHT, -10, -10);
 
   day_label = lv_label_create(time_cont);
@@ -201,7 +218,8 @@ void createTimeUI(lv_obj_t *parent) {
   lv_obj_t *img;
   lv_obj_t *label;
 
-  for (int i = 0; i < sizeof(coinSubsribe) / sizeof(coinSubsribe[0]); ++i) {
+  for (int i = 0; i < sizeof(coinSubsribe) / sizeof(coinSubsribe[0]); ++i)
+  {
     lv_obj_t *cont = lv_obj_create(second_cont);
     lv_obj_set_size(cont, LV_PCT(100), LV_PCT(100));
     lv_obj_set_scroll_dir(cont, LV_DIR_NONE);
@@ -223,7 +241,8 @@ void createTimeUI(lv_obj_t *parent) {
     // Addde last obj message cb
     lv_obj_add_event_cb(
         label,
-        [](lv_event_t *e) {
+        [](lv_event_t *e)
+        {
           lv_obj_t *label = (lv_obj_t *)lv_event_get_target(e);
           lv_msg_t *msg = lv_event_get_msg(e);
           const CoinMarketCapApiDataStream *val =
@@ -234,7 +253,8 @@ void createTimeUI(lv_obj_t *parent) {
           Serial.print(val->id);
           Serial.print("  TARGET ID:");
           Serial.println(target->id);
-          if (target->id == val->id) {
+          if (target->id == val->id)
+          {
             lv_label_set_text_fmt(label, "$%.2f", val->price);
             lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, -50);
           }
@@ -245,7 +265,8 @@ void createTimeUI(lv_obj_t *parent) {
   lv_timer_create(update_date, 500, NULL);
 }
 
-static void slider_event_cb(lv_event_t *e) {
+static void slider_event_cb(lv_event_t *e)
+{
   lv_obj_t *slider = lv_event_get_target(e);
   lv_obj_t *slider_label = (lv_obj_t *)lv_event_get_user_data(e);
   uint8_t level = (uint8_t)lv_slider_get_value(slider);
@@ -255,7 +276,8 @@ static void slider_event_cb(lv_event_t *e) {
   amoled.setBrightness(level);
 }
 
-void createBrightnessUI(lv_obj_t *parent) {
+void createBrightnessUI(lv_obj_t *parent)
+{
   lv_obj_t *label;
   uint8_t b = amoled.getBrightness();
   lv_obj_t *cont = lv_obj_create(parent);
@@ -286,13 +308,17 @@ void createBrightnessUI(lv_obj_t *parent) {
   // }, LV_EVENT_MSG_RECEIVED, NULL);
 
   lv_timer_create(
-      [](lv_timer_t *t) {
+      [](lv_timer_t *t)
+      {
         lv_obj_t *label = (lv_obj_t *)t->user_data;
-        if (WiFi.isConnected()) {
+        if (WiFi.isConnected())
+        {
           lv_label_set_text_fmt(label, "IP:%s RSSI:%d",
                                 (WiFi.localIP().toString().c_str()),
                                 WiFi.RSSI());
-        } else {
+        }
+        else
+        {
           lv_label_set_text(label, "IP:NONE");
         }
       },
@@ -314,12 +340,16 @@ void createBrightnessUI(lv_obj_t *parent) {
 
   // SDCard
   const BoardsConfigure_t *boards = amoled.getBoardsConfigure();
-  if (boards->sd) {
+  if (boards->sd)
+  {
     label = lv_label_create(cont);
-    if (SD.cardType() != CARD_NONE) {
+    if (SD.cardType() != CARD_NONE)
+    {
       lv_label_set_text_fmt(label, "SDCard: %u MBytes",
                             (uint32_t)(SD.cardSize() / 1024 / 1024));
-    } else {
+    }
+    else
+    {
       lv_label_set_text(label, "SDCard: NULL");
     }
     lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
@@ -347,18 +377,21 @@ void createBrightnessUI(lv_obj_t *parent) {
   lv_obj_align_to(slider_label, slider, LV_ALIGN_CENTER, 0, 0);
 
   uint8_t board_id = amoled.getBoardID();
-  if (board_id == LILYGO_AMOLED_191_SPI) {
+  if (board_id == LILYGO_AMOLED_191_SPI)
+  {
     lv_obj_t *btn_charge = lv_btn_create(parent);
     label = lv_label_create(btn_charge);
     lv_label_set_text(label, "ChargeOFF");
     lv_obj_add_flag(btn_charge, LV_OBJ_FLAG_CHECKABLE);
     lv_obj_add_event_cb(
         btn_charge,
-        [](lv_event_t *e) {
+        [](lv_event_t *e)
+        {
           lv_obj_t *btn = lv_event_get_target(e);
           lv_obj_t *label = (lv_obj_t *)lv_event_get_user_data(e);
           lv_state_t state = lv_obj_get_state(btn);
-          switch (state) {
+          switch (state)
+          {
           case 2:
             // OFF
             amoled.disableCharge();
@@ -379,14 +412,17 @@ void createBrightnessUI(lv_obj_t *parent) {
   }
 }
 
-static void pixels_event_handler(lv_event_t *e) {
+static void pixels_event_handler(lv_event_t *e)
+{
   lv_obj_t *target = lv_event_get_target(e);
   lv_event_code_t code = lv_event_get_code(e);
   uint8_t *index = (uint8_t *)lv_obj_get_user_data(target);
   if (!index || !pixels_ptr)
     return;
-  if (code == LV_EVENT_CLICKED || code == LV_EVENT_VALUE_CHANGED) {
-    switch (*index) {
+  if (code == LV_EVENT_CLICKED || code == LV_EVENT_VALUE_CHANGED)
+  {
+    switch (*index)
+    {
     case 0:
       pixels_ptr->setPixelColor(0, pixels_ptr->Color(255, 0, 0));
       pixels_ptr->show();
@@ -399,15 +435,18 @@ static void pixels_event_handler(lv_event_t *e) {
       pixels_ptr->setPixelColor(0, pixels_ptr->Color(0, 0, 255));
       pixels_ptr->show();
       break;
-    case 3: {
+    case 3:
+    {
       lv_obj_t *cw = (lv_obj_t *)lv_event_get_user_data(e);
       lv_color_t c = lv_colorwheel_get_rgb(cw);
       pixels_ptr->setPixelColor(
           0, pixels_ptr->Color(c.ch.red, (c.ch.green_h << 3) | c.ch.green_l,
                                c.ch.blue));
       pixels_ptr->show();
-    } break;
-    case 4: {
+    }
+    break;
+    case 4:
+    {
       lv_obj_t *slider_label = (lv_obj_t *)lv_event_get_user_data(e);
       uint8_t level = (uint8_t)lv_slider_get_value(target);
       int percentage = map(level, 0, 255, 0, 100);
@@ -416,14 +455,16 @@ static void pixels_event_handler(lv_event_t *e) {
       uint8_t val = (uint8_t)lv_slider_get_value(target);
       pixels_ptr->setBrightness(val);
       pixels_ptr->show();
-    } break;
+    }
+    break;
     default:
       break;
     }
   }
 }
 
-void createPixelsUI(lv_obj_t *parent) {
+void createPixelsUI(lv_obj_t *parent)
+{
   static lv_style_t style;
   lv_style_set_border_width(&style, 0);
   lv_style_set_bg_color(&style, lv_color_black());
@@ -504,7 +545,8 @@ void createPixelsUI(lv_obj_t *parent) {
   lv_obj_align_to(slider, cw, LV_ALIGN_OUT_RIGHT_MID, 20, 0);
 }
 
-void createDeviceInfoUI(lv_obj_t *parent) {
+void createDeviceInfoUI(lv_obj_t *parent)
+{
   lv_obj_t *cont = lv_obj_create(parent);
   lv_obj_set_style_border_width(cont, 0, 0);
   lv_obj_set_style_bg_color(cont, lv_color_black(), 0);
@@ -587,34 +629,41 @@ void createDeviceInfoUI(lv_obj_t *parent) {
 
   // SDCard
   const BoardsConfigure_t *boards = amoled.getBoardsConfigure();
-  if (boards->sd) {
+  if (boards->sd)
+  {
     lv_obj_t *img_sd = lv_img_create(cont);
     lv_img_set_src(img_sd, &icon_micro_sd);
     lv_obj_align_to(img_sd, img_ram, LV_ALIGN_OUT_RIGHT_MID, 40, 0);
 
     label = lv_label_create(cont);
     lv_obj_add_style(label, &font_style, 0);
-    if (SD.cardType() != CARD_NONE) {
+    if (SD.cardType() != CARD_NONE)
+    {
       lv_label_set_text_fmt(label, "%.2fG",
                             SD.cardSize() / 1024 / 1024 / 1024.0);
-    } else {
+    }
+    else
+    {
       lv_label_set_text(label, "N/A");
     }
     lv_obj_align_to(label, img_sd, LV_ALIGN_OUT_BOTTOM_MID, 0, 5);
   }
 
   lv_timer_create(
-      [](lv_timer_t *t) {
+      [](lv_timer_t *t)
+      {
         lv_obj_t **p = (lv_obj_t **)t->user_data;
         uint16_t vol = amoled.getBattVoltage();
         lv_label_set_text_fmt(p[0], "%u mV", vol);
 
         const BoardsConfigure_t *boards = amoled.getBoardsConfigure();
-        if (boards->pmu) {
+        if (boards->pmu)
+        {
           vol = amoled.getVbusVoltage();
           lv_label_set_text_fmt(p[1], "%u mV", vol);
 
-          if (boards->sensor) {
+          if (boards->sensor)
+          {
             float lux = amoled.getLux();
             lv_label_set_text_fmt(p[2], "%.1f lux", lux);
           }
@@ -623,21 +672,25 @@ void createDeviceInfoUI(lv_obj_t *parent) {
       1000, pdat);
 }
 
-void weather_event_cb(lv_event_t *e) {
+void weather_event_cb(lv_event_t *e)
+{
   lv_obj_t *label = (lv_obj_t *)lv_event_get_target(e);
   uint8_t *index = (uint8_t *)lv_event_get_user_data(e);
   lv_msg_t *msg = lv_event_get_msg(e);
   Weather::WeatherApiData *api =
       (Weather::WeatherApiData *)lv_msg_get_payload(msg);
-  if (!index) {
+  if (!index)
+  {
     Serial.println("Empty index point");
     return;
   }
-  if (!api) {
+  if (!api)
+  {
     Serial.println("Empty api point");
     return;
   }
-  switch (*index) {
+  switch (*index)
+  {
   case 0: // City
     lv_label_set_text(label, api->city.c_str());
     break;
@@ -660,7 +713,8 @@ void weather_event_cb(lv_event_t *e) {
 }
 
 // Need too many icons, don't change icons here
-void createWeatherUI(lv_obj_t *parent) {
+void createWeatherUI(lv_obj_t *parent)
+{
   lv_obj_t *img;
   lv_obj_t *label;
 
@@ -673,10 +727,13 @@ void createWeatherUI(lv_obj_t *parent) {
 
   lv_obj_t *cont = lv_obj_create(parent);
   lv_obj_add_style(cont, &cont_style, 0);
-  if (lv_disp_get_ver_res(NULL) > 300) {
+  if (lv_disp_get_ver_res(NULL) > 300)
+  {
     lv_obj_set_size(cont, lv_disp_get_physical_hor_res(NULL),
                     lv_disp_get_ver_res(NULL) / 2);
-  } else {
+  }
+  else
+  {
     lv_obj_set_size(cont, lv_disp_get_physical_hor_res(NULL),
                     lv_disp_get_ver_res(NULL));
   }
@@ -753,10 +810,13 @@ void createWeatherUI(lv_obj_t *parent) {
   lv_obj_set_style_border_width(forecast, 0, 0);
   lv_obj_set_style_bg_color(forecast, lv_color_black(), 0);
 
-  if (lv_disp_get_ver_res(NULL) > 300) {
+  if (lv_disp_get_ver_res(NULL) > 300)
+  {
     lv_obj_set_size(forecast, lv_disp_get_physical_hor_res(NULL),
                     lv_disp_get_ver_res(NULL) / 2);
-  } else {
+  }
+  else
+  {
     lv_obj_set_size(forecast, lv_disp_get_physical_hor_res(NULL),
                     lv_disp_get_ver_res(NULL) - 20);
   }
@@ -770,7 +830,8 @@ void createWeatherUI(lv_obj_t *parent) {
   const lv_img_dsc_t *src_img[] = {&icon_thunderstorm, &icon_cloudy,
                                    &icon_cloudy_sun};
 
-  for (int i = 0; i < 3; ++i) {
+  for (int i = 0; i < 3; ++i)
+  {
     lv_obj_t *obj = lv_obj_create(forecast);
     lv_obj_set_style_border_width(obj, 0, 0);
     lv_obj_set_style_bg_color(obj, lv_color_black(), 0);
@@ -794,14 +855,18 @@ static lv_timer_t *wifi_timer = NULL;
 static uint32_t wifi_timer_counter = 0;
 static uint32_t wifi_connnect_timeout = 60;
 
-static void wifi_config_event_handler(lv_event_t *e) {
+static void wifi_config_event_handler(lv_event_t *e)
+{
   lv_event_code_t code = lv_event_get_code(e);
   lv_obj_t *btn = (lv_obj_t *)lv_event_get_target(e);
   lv_obj_t *label = (lv_obj_t *)lv_event_get_user_data(e);
-  if (code == LV_EVENT_CLICKED) {
-    if (smartConfigStart) {
+  if (code == LV_EVENT_CLICKED)
+  {
+    if (smartConfigStart)
+    {
       lv_label_set_text(label, "Config Start");
-      if (wifi_timer) {
+      if (wifi_timer)
+      {
         lv_timer_del(wifi_timer);
         wifi_timer = NULL;
       }
@@ -818,18 +883,21 @@ static void wifi_config_event_handler(lv_event_t *e) {
     lv_obj_add_state(btn, LV_STATE_CHECKED);
 
     wifi_timer = lv_timer_create(
-        [](lv_timer_t *t) {
+        [](lv_timer_t *t)
+        {
           lv_obj_t *btn = (lv_obj_t *)t->user_data;
           lv_obj_t *label = lv_obj_get_child(btn, 0);
           bool destory = false;
           wifi_timer_counter++;
           if (wifi_timer_counter > wifi_connnect_timeout &&
-              !WiFi.isConnected()) {
+              !WiFi.isConnected())
+          {
             Serial.println("Connect timeout!");
             destory = true;
             lv_label_set_text(label, "Time Out");
           }
-          if (WiFi.isConnected()) {
+          if (WiFi.isConnected())
+          {
             Serial.println("WiFi has connected!");
             Serial.printf("SSID:%s\r\n", WiFi.SSID().c_str());
             Serial.printf("PSW:%s\r\n", WiFi.psk().c_str());
@@ -837,7 +905,8 @@ static void wifi_config_event_handler(lv_event_t *e) {
             String IP = WiFi.localIP().toString();
             lv_label_set_text(label, IP.c_str());
           }
-          if (destory) {
+          if (destory)
+          {
             WiFi.stopSmartConfig();
             smartConfigStart = false;
             lv_timer_del(wifi_timer);
@@ -851,14 +920,18 @@ static void wifi_config_event_handler(lv_event_t *e) {
   }
 }
 
-void createWiFiConfigUI(lv_obj_t *parent) {
+void createWiFiConfigUI(lv_obj_t *parent)
+{
   lv_obj_t *cont = lv_obj_create(parent);
   lv_obj_set_style_border_width(cont, 0, 0);
   lv_obj_set_style_bg_color(cont, lv_color_black(), 0);
 
-  if (lv_disp_get_ver_res(NULL) > 300) {
+  if (lv_disp_get_ver_res(NULL) > 300)
+  {
     lv_obj_set_size(cont, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL));
-  } else {
+  }
+  else
+  {
     lv_obj_set_size(cont, lv_disp_get_hor_res(NULL),
                     lv_disp_get_ver_res(NULL) * 2 + 20);
   }
@@ -926,14 +999,18 @@ void createWiFiConfigUI(lv_obj_t *parent) {
   lv_obj_add_event_cb(btn, wifi_config_event_handler, LV_EVENT_CLICKED, label);
   lv_obj_center(btn);
 
-  if (lv_disp_get_ver_res(NULL) > 300) {
+  if (lv_disp_get_ver_res(NULL) > 300)
+  {
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -30);
-  } else {
+  }
+  else
+  {
     lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, 0);
   }
 }
 
-void tileview_change_cb(lv_event_t *e) {
+void tileview_change_cb(lv_event_t *e)
+{
   lv_obj_t *tileview = lv_event_get_target(e);
   pageId = lv_obj_get_index(lv_tileview_get_tile_act(tileview));
   lv_event_code_t c = lv_event_get_code(e);
@@ -946,23 +1023,30 @@ void tileview_change_cb(lv_event_t *e) {
   Serial.println(pageId);
 }
 
-void showCertification(uint32_t delay_ms) {
+void showCertification(uint32_t delay_ms)
+{
   uint8_t board = amoled.getBoardID();
 
   lv_obj_t *img = lv_img_create(lv_scr_act());
 
-  if (board == LILYGO_AMOLED_191 && amoled.hasTouch()) {
+  if (board == LILYGO_AMOLED_191 && amoled.hasTouch())
+  {
     lv_img_set_src(img, &img_certification_amoled_191_tp);
-  } else if (board == LILYGO_AMOLED_241) {
+  }
+  else if (board == LILYGO_AMOLED_241)
+  {
     lv_img_set_src(img, &img_certification_t4_s3_241_tp);
-  } else {
+  }
+  else
+  {
     lv_obj_del(img);
     return;
   }
   lv_obj_center(img);
 
   uint32_t start_ms = millis();
-  while ((millis() - start_ms) < delay_ms) {
+  while ((millis() - start_ms) < delay_ms)
+  {
     lv_timer_handler();
     delay(2);
   }
@@ -971,7 +1055,8 @@ void showCertification(uint32_t delay_ms) {
 
 uint16_t max_item_num = 6;
 
-void factoryGUI(Adafruit_NeoPixel *pixels_ptr) {
+void factoryGUI(Adafruit_NeoPixel *pixels_ptr)
+{
   static lv_style_t bgStyle;
   lv_style_init(&bgStyle);
   lv_style_set_bg_color(&bgStyle, lv_color_black());
@@ -1005,7 +1090,8 @@ void factoryGUI(Adafruit_NeoPixel *pixels_ptr) {
   createBrightnessUI(t4);
 
   const BoardsConfigure_t *boards = amoled.getBoardsConfigure();
-  if (boards->pixelsPins != -1) {
+  if (boards->pixelsPins != -1)
+  {
     createPixelsUI(t5);
     createWiFiConfigUI(t6);
     createDisplayBadPixelsTest(t7);
@@ -1013,7 +1099,9 @@ void factoryGUI(Adafruit_NeoPixel *pixels_ptr) {
         lv_tileview_add_tile(tileview, 7, 0, LV_DIR_HOR | LV_DIR_BOTTOM);
     createPaintUI(t8);
     max_item_num = 8;
-  } else {
+  }
+  else
+  {
     createWiFiConfigUI(t5);
     createDisplayBadPixelsTest(t6);
     createPaintUI(t7);
@@ -1022,7 +1110,8 @@ void factoryGUI(Adafruit_NeoPixel *pixels_ptr) {
   }
 }
 
-void selectNextItem() {
+void selectNextItem()
+{
   static int id = 0;
   id++;
   id %= max_item_num;
@@ -1031,7 +1120,8 @@ void selectNextItem() {
 
 /////////////////////////////////////////////////////\
 
-struct {
+struct
+{
   /**
    * root
    *   -> toolbar
@@ -1051,12 +1141,14 @@ struct {
   lv_draw_line_dsc_t brush;
 } ui;
 
-void onCanvasEvent(lv_event_t *e) {
+void onCanvasEvent(lv_event_t *e)
+{
   lv_event_code_t code = lv_event_get_code(e);
   lv_obj_t *obj = lv_event_get_target(e);
   static lv_coord_t last_x, last_y = -32768;
 
-  if (code == LV_EVENT_PRESSING) {
+  if (code == LV_EVENT_PRESSING)
+  {
     lv_indev_t *indev = lv_indev_get_act();
     if (indev == NULL)
       return;
@@ -1064,10 +1156,13 @@ void onCanvasEvent(lv_event_t *e) {
     lv_point_t point;
     lv_indev_get_point(indev, &point);
     lv_point_t points[2];
-    if ((last_x == -32768) || (last_y == -32768)) {
+    if ((last_x == -32768) || (last_y == -32768))
+    {
       last_x = point.x;
       last_y = point.y;
-    } else {
+    }
+    else
+    {
       points[0].x = last_x;
       points[0].y = last_y;
       points[1].x = point.x;
@@ -1076,55 +1171,71 @@ void onCanvasEvent(lv_event_t *e) {
       last_y = point.y;
       lv_canvas_draw_line(obj, points, 2, &ui.brush);
     }
-  } else if (code == LV_EVENT_RELEASED) {
+  }
+  else if (code == LV_EVENT_RELEASED)
+  {
     last_x = -32768;
     last_y = -32768;
   }
 }
 
-void onBrushColorLabelEvent(lv_event_t *e) {
+void onBrushColorLabelEvent(lv_event_t *e)
+{
   lv_event_code_t code = lv_event_get_code(e);
-  if (code == LV_EVENT_CLICKED) {
+  if (code == LV_EVENT_CLICKED)
+  {
     lv_obj_add_flag(ui.brushWidthSlider, LV_OBJ_FLAG_HIDDEN);
     lv_obj_clear_flag(ui.brushColorwheel, LV_OBJ_FLAG_HIDDEN);
     lv_obj_remove_event_cb(ui.canvas, onCanvasEvent);
   }
 }
 
-void onBrushLabelEvent(lv_event_t *e) {
+void onBrushLabelEvent(lv_event_t *e)
+{
   lv_event_code_t code = lv_event_get_code(e);
-  if (code == LV_EVENT_CLICKED) {
+  if (code == LV_EVENT_CLICKED)
+  {
     lv_obj_add_flag(ui.brushColorwheel, LV_OBJ_FLAG_HIDDEN);
     lv_obj_clear_flag(ui.brushWidthSlider, LV_OBJ_FLAG_HIDDEN);
     lv_obj_remove_event_cb(ui.canvas, onCanvasEvent);
   }
 }
 
-void onBrushWidthSliderEvent(lv_event_t *e) {
+void onBrushWidthSliderEvent(lv_event_t *e)
+{
   lv_event_code_t code = lv_event_get_code(e);
   lv_obj_t *slider = lv_event_get_target(e);
-  if (code == LV_EVENT_DEFOCUSED) {
+  if (code == LV_EVENT_DEFOCUSED)
+  {
     lv_obj_add_flag(ui.brushWidthSlider, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_event_cb(ui.canvas, onCanvasEvent, LV_EVENT_ALL, NULL);
-  } else if (code == LV_EVENT_VALUE_CHANGED) {
+  }
+  else if (code == LV_EVENT_VALUE_CHANGED)
+  {
     ui.brush.width = (lv_coord_t)lv_slider_get_value(slider);
   }
 }
 
-void onBrushColorwheelEvent(lv_event_t *e) {
+void onBrushColorwheelEvent(lv_event_t *e)
+{
   lv_event_code_t code = lv_event_get_code(e);
   lv_obj_t *colorwheel = lv_event_get_target(e);
-  if (code == LV_EVENT_DEFOCUSED) {
+  if (code == LV_EVENT_DEFOCUSED)
+  {
     lv_obj_add_flag(ui.brushColorwheel, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_event_cb(ui.canvas, onCanvasEvent, LV_EVENT_ALL, NULL);
-  } else if (code == LV_EVENT_VALUE_CHANGED) {
+  }
+  else if (code == LV_EVENT_VALUE_CHANGED)
+  {
     ui.brush.color = lv_colorwheel_get_rgb(colorwheel);
   }
 }
 
-void onRefreshLabelEvent(lv_event_t *e) {
+void onRefreshLabelEvent(lv_event_t *e)
+{
   lv_event_code_t code = lv_event_get_code(e);
-  if (code == LV_EVENT_CLICKED) {
+  if (code == LV_EVENT_CLICKED)
+  {
 
     lv_obj_add_flag(ui.brushWidthSlider, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(ui.brushColorwheel, LV_OBJ_FLAG_HIDDEN);
@@ -1134,7 +1245,8 @@ void onRefreshLabelEvent(lv_event_t *e) {
   }
 }
 
-void createPaintUI(lv_obj_t *parent) {
+void createPaintUI(lv_obj_t *parent)
+{
   ui.root = (parent);
   lv_obj_set_size(ui.root, lv_pct(100), lv_pct(100));
 
