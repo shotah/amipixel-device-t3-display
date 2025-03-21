@@ -23,9 +23,9 @@
 // clang-format off
 const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_GIF_{{ array_name|upper }} uint8_t {{ array_name }}_gif_map[]= {
 {%- for byte in byte_data %}
-    {{ byte }}{% if not loop.last %},{% endif %}{% if (loop.index + 1) % bytes_per_line == 0 and not loop.last %}
-{% endif %}
-{%- endfor %}
+    {{- byte -}}{% if not loop.last %},{% endif %}{% if (loop.index + 1) % bytes_per_line == 0 and not loop.last %}
+{% endif %}{% endfor %}
+};
 // clang-format on
 
 const lv_img_dsc_t gif_{{ array_name }} = {
