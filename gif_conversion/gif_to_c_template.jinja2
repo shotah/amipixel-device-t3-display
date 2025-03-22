@@ -29,7 +29,8 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_GIF_{{ ar
 // clang-format on
 
 const lv_img_dsc_t gif_{{ array_name }} = {
-    .header.cf = LV_IMG_CF_RAW_CHROMA_KEYED, 
+    // .header.cf = LV_IMG_CF_RAW_CHROMA_KEYED,
+    .header.cf = LV_IMG_CF_TRUE_COLOR,
     .header.always_zero = 0,
     .header.reserved = 0,
     .header.w = {{ width }},

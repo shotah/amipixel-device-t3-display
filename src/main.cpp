@@ -5,7 +5,7 @@
 #include "display_driver.h"
 #include "fs_handler.h" // Include fs_handler.h
 #include "globals.h"
-#include "gui.h"
+// #include "gui.h"
 #include "weather.h"
 #include "wifi_module.h"
 #include "zones.h"
@@ -19,6 +19,7 @@
 #include <esp_wifi.h>
 #include <lvgl.h>
 #include <time.h>
+#include "ui_module.h"
 
 using namespace ace_button;
 using namespace Constants;
@@ -73,6 +74,9 @@ void setup()
 
   beginLvglHelper(amoled);
 
+  // Initialize and show the GIF UI
+  ui_module_init();
+
   // --- Initialize Filesystem using FSHandler ---
   if (FSHandler::setupFS())
   {
@@ -96,8 +100,8 @@ void setup()
   Button::setupButton(amoled, pixels);
   DisplayDriver::setupDisplayDriver(amoled);
 
-  showCertification(3000);
-  factoryGUI(pixels);
+  // showCertification(3000);
+  // factoryGUI(pixels);
 
   enableLoopWDT();
   Serial.println("Setup complete. Entering loop().");
