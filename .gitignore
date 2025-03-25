@@ -54,3 +54,4 @@ dkms.conf
 # Pio Build and Libraries folder
 .pio/
 compile_commands.json
+.vscode/c_cpp_properties.json
