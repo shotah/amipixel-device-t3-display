@@ -538,11 +538,13 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_GIF_RABBI
 // clang-format on
 
 const lv_img_dsc_t gif_rabbit = {
-    .header.cf = LV_IMG_CF_RAW_CHROMA_KEYED,
-    .header.always_zero = 0,
-    .header.reserved = 0,
-    .header.w = 50,
-    .header.h = 50,
+    .header = {
+        .cf = LV_IMG_CF_RAW_CHROMA_KEYED,
+        .always_zero = 0,
+        .reserved = 0,
+        .w = 50,
+        .h = 50,
+    },
     .data_size = 6651,
     .data = gif_rabbit_map,
 };

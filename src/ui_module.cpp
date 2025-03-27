@@ -1,6 +1,6 @@
 #include "ui_module.h"
-#include "gif_cat.c"    // Adjust the path to the correct location of gif_cat.c
-#include "gif_rabbit.c" // Example of another GIF
+#include "data/gifs/gif_cat.c"
+#include "data/gifs/gif_rabbit.c"
 #include "esp_log.h"
 
 static const char *TAG = "UI_MODULE";
@@ -27,7 +27,7 @@ void ui_init(void)
     if (!avatar_state_load(&avatar_data))
     {
         avatar_state_init(&avatar_data);
-        avatar_state_save(&avatar_data); // Save initial state
+        avatar_state_save(&avatar_data);
     }
     else
     {

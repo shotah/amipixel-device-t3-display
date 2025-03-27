@@ -997,12 +997,13 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_GIF_CAT u
 // clang-format on
 
 const lv_img_dsc_t gif_cat = {
-    // .header.cf = LV_IMG_CF_RAW_CHROMA_KEYED,
-    .header.cf = LV_IMG_CF_TRUE_COLOR,
-    .header.always_zero = 0,
-    .header.reserved = 0,
-    .header.w = 50,
-    .header.h = 50,
+    .header = {
+        .cf = LV_IMG_CF_TRUE_COLOR,
+        .always_zero = 0,
+        .reserved = 0,
+        .w = 50,
+        .h = 50,
+    },
     .data_size = 12631,
     .data = cat_gif_map,
 };

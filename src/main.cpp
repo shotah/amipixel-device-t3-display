@@ -75,7 +75,7 @@ void setup()
   beginLvglHelper(amoled);
 
   // Initialize and show the GIF UI
-  ui_module_init();
+  ui_init();
 
   // --- Initialize Filesystem using FSHandler ---
   if (FSHandler::setupFS())
