@@ -11,7 +11,7 @@ PLATFORMIO_CMD = pio                 # Command for PlatformIO CLI (usually 'pio'
 
 # --- Targets ---
 
-.PHONY: all build upload clean monitor py-pio-install deploy test compdb uploadfs deployfs
+.PHONY: all build upload clean monitor py-pio-install deploy test compdb uploadfs deployfs quick generate-stick-figures
 
 all: build
 
@@ -40,6 +40,15 @@ monitor:
 	@$(PLATFORMIO_CMD) device monitor -e $(PROJECT_ENV)
 
 deploy: clean build upload monitor
+
+# Quick build and upload for development with stick figure generation
+quick: generate-stick-figures build upload
+	@echo "Quick build and upload completed!"
+
+# Generate stick figures using the Python script
+generate-stick-figures:
+	@echo "Generating stick figure animations..."
+	@python scripts/stick_figure_generator.py
 
 vbuild:
 	@echo "Building AmiPixel project for environment: $(VIRTUAL_ENV)"

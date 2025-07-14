@@ -6,8 +6,12 @@
 
 // Forward declarations of UI elements
 extern lv_obj_t *screen_main;
+extern lv_obj_t *screen_stats;
 extern lv_obj_t *btn_feed;
 extern lv_obj_t *btn_play;
+extern lv_obj_t *btn_pet;
+extern lv_obj_t *btn_stats;
+extern lv_obj_t *btn_back;
 extern lv_obj_t *img_avatar;
 
 // Global instance of the avatar state
@@ -16,14 +20,32 @@ extern avatar_state_t avatar_data;
 // Function to initialize the UI
 void ui_init(void);
 
+// Functions to create screens
+void create_main_screen(void);
+void create_stats_screen(void);
+
+// Functions to switch between screens
+void switch_to_main_screen(void);
+void switch_to_stats_screen(void);
+
 // Event handlers for buttons
 void btn_feed_cb(lv_event_t *e);
 void btn_play_cb(lv_event_t *e);
+void btn_pet_cb(lv_event_t *e);
+void btn_sleep_cb(lv_event_t *e);
+void btn_stats_cb(lv_event_t *e);
+void btn_back_cb(lv_event_t *e);
 
 // Function to set the avatar's GIF based on its state
 void update_avatar_gif(void);
 
 // Function to track actions (you can expand this)
 void track_action(const char *action_name);
+
+// Function to create health stats display
+void create_health_stats_display(lv_obj_t *parent);
+
+// Function to update health stats display
+void update_health_stats_display(void);
 
 #endif // UI_MODULE_H
