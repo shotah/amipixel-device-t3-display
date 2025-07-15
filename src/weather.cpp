@@ -17,33 +17,26 @@ WeatherApiData weatherApi; // Definition of the global weatherApi instance
 static WiFiClientSecure client;
 static HTTPClient https;
 
+// Forward declaration for WiFi callback
+void onWifiConnected();
+
 // --- Static Function Prototypes ---
-static void
-handleWifiMessages(void *subscriber_ptr,
-                   lv_msg_t *msg); // Corrected message handler signature
-static void
-weatherUpdateTask(void *ptr); // Static, internal weather update task
+static void weatherUpdateTask(void *ptr); // Static, internal weather update task
 
 void setupWeather() {
-  // Subscribe to WIFI_GOT_IP_MSG to start weather updates when WiFi connects
-  lv_msg_subscribe(
-      static_cast<uint32_t>(MessageIDs::WiFiMessagesEnum::WIFI_GOT_IP_MSG),
-      handleWifiMessages, nullptr);
+  // Note: WiFi connection handling moved to direct callback in wifi_module
+  Serial.println("Weather module initialized");
 }
 
-static void handleWifiMessages(void *subscriber_ptr, lv_msg_t *msg) {
-  uint32_t msg_id = lv_msg_get_id(msg); // Get the message ID from lv_msg_t
-
-  if (msg_id ==
-      static_cast<uint32_t>(MessageIDs::WiFiMessagesEnum::WIFI_GOT_IP_MSG)) {
-    Serial.println("Weather Module received WIFI_GOT_IP_MSG");
-    // Start the weather update task when WiFi is connected
-    static TaskHandle_t weatherTaskHandle =
-        NULL; // Static handle to avoid re-creation
-    if (weatherTaskHandle == NULL) {
-      xTaskCreate(weatherUpdateTask, "weatherUpdate", 10 * 1024, NULL, 10,
-                  &weatherTaskHandle); // Example priority, adjust as needed
-    }
+// This function will be called directly by wifi_module when connection is established
+void onWifiConnected() {
+  Serial.println("Weather Module received WiFi connection");
+  // Start the weather update task when WiFi is connected
+  static TaskHandle_t weatherTaskHandle =
+      NULL; // Static handle to avoid re-creation
+  if (weatherTaskHandle == NULL) {
+    xTaskCreate(weatherUpdateTask, "weatherUpdate", 10 * 1024, NULL, 10,
+                &weatherTaskHandle); // Example priority, adjust as needed
   }
 }
 
@@ -154,8 +147,9 @@ static void weatherUpdateTask(
           Serial.print("\thumidity:");
           Serial.println(weatherApi.humidity);
 
-          lv_msg_send(MessageIDs::WEATHER_MSG_ID,
-                      &weatherApi); // Send weather data via lv_msg
+          // Note: Direct logging instead of lv_msg_send for now
+          // Weather data is available in global weatherApi struct
+          Serial.println("Weather data updated successfully");
 
           done = true;
         } else {

@@ -18,35 +18,28 @@ static WiFiClientSecure client; // Static client for timezone API
 static HTTPClient https;        // Static https for timezone API
 static LilyGo_Class *amoled_ptr = nullptr;
 
+// Forward declaration for WiFi callback  
+void onWifiConnected();
+
 // --- Static Function Prototypes ---
-static void
-handleWifiMessages(void *subscriber_ptr,
-                   lv_msg_t *msg); // Corrected message handler signature
 static void time_available(struct timeval *t); // Local time_available callback
 
 void setupDateTime(LilyGo_Class &amoled_instance) {
   amoled_ptr = &amoled_instance;
-  // Subscribe to WIFI_GOT_IP_MSG to start time sync when WiFi connects
-  lv_msg_subscribe(
-      static_cast<uint32_t>(MessageIDs::WiFiMessagesEnum::WIFI_GOT_IP_MSG),
-      handleWifiMessages, nullptr);
+  // Note: WiFi connection handling moved to direct callback in wifi_module
+  Serial.println("DateTime module initialized");
 }
 
-// Corrected handleWifiMessages function
-static void handleWifiMessages(void *subscriber_ptr, lv_msg_t *msg) {
-  uint32_t msg_id = lv_msg_get_id(msg); // Get the message ID from lv_msg_t
-
-  if (msg_id ==
-      static_cast<uint32_t>(MessageIDs::WiFiMessagesEnum::WIFI_GOT_IP_MSG)) {
-    Serial.println("DateTime Module received WIFI_GOT_IP_MSG");
-    // Start the datetime sync task when WiFi is connected
-    static TaskHandle_t datetimeTaskHandle =
-        NULL; // Static handle to avoid re-creation
-    if (datetimeTaskHandle == NULL) {
-      xTaskCreate(
-          datetimeSyncTask, "datetimeSync", 10 * 1024, NULL, 11,
-          &datetimeTaskHandle); // Slightly higher priority than weather/coin
-    }
+// This function will be called directly by wifi_module when connection is established
+void onWifiConnected() {
+  Serial.println("DateTime Module received WiFi connection");
+  // Start the datetime sync task when WiFi is connected
+  static TaskHandle_t datetimeTaskHandle =
+      NULL; // Static handle to avoid re-creation
+  if (datetimeTaskHandle == NULL) {
+    xTaskCreate(
+        datetimeSyncTask, "datetimeSync", 10 * 1024, NULL, 11,
+        &datetimeTaskHandle); // Slightly higher priority than weather/coin
   }
 }
 

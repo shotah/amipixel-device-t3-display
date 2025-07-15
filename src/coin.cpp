@@ -29,32 +29,26 @@ static CoinMarketCapApiSubsribe coinSubsribe[4] = {
 static CoinMarketCapApiDataStream coinData[4]; // Static, module-level coinData
 
 // --- Static Function Prototypes ---
-static void
-handleWifiMessages(void *subscriber_ptr,
-                   lv_msg_t *msg);     // Corrected message handler signature
 static void coinUpdateTask(void *ptr); // Static, internal coin update task
 
+// Simple callback-based approach replacing LVGL messaging
+static bool wifi_connected = false;
+
 void setupCoin() {
-  // Subscribe to WIFI_GOT_IP_MSG to start coin updates when WiFi connects
-  lv_msg_subscribe(
-      static_cast<uint32_t>(MessageIDs::WiFiMessagesEnum::WIFI_GOT_IP_MSG),
-      handleWifiMessages, nullptr);
+  // No messaging setup needed - will use direct function calls
+  Serial.println("Coin module initialized");
 }
 
-static void handleWifiMessages(void *subscriber_ptr, lv_msg_t *msg) {
-  uint32_t msg_id = lv_msg_get_id(msg); // Get the message ID from lv_msg_t
-
-  if (msg_id ==
-      static_cast<uint32_t>(MessageIDs::WiFiMessagesEnum::WIFI_GOT_IP_MSG)) {
-    Serial.println("Coin Module received WIFI_GOT_IP_MSG");
-    // Start the coin update task when WiFi is connected
-    static TaskHandle_t coinTaskHandle =
-        NULL; // Static handle to avoid re-creation
-    if (coinTaskHandle == NULL) {
-      xTaskCreate(coinUpdateTask, "coinUpdate", 10 * 1024, NULL, 9,
-                  &coinTaskHandle); // Example priority, adjust as needed -
-                                    // lower than weather/datetime
-    }
+void onWifiConnected() {
+  // Called directly when WiFi connects (replaces messaging)
+  Serial.println("Coin Module: WiFi connected, starting coin updates");
+  wifi_connected = true;
+  static TaskHandle_t coinTaskHandle =
+      NULL; // Static handle to avoid re-creation
+  if (coinTaskHandle == NULL) {
+    xTaskCreate(coinUpdateTask, "coinUpdate", 10 * 1024, NULL, 9,
+                &coinTaskHandle); // Example priority, adjust as needed -
+                                  // lower than weather/datetime
   }
 }
 
@@ -67,38 +61,38 @@ static void coinUpdateTask(
 
   // --- Prepare CoinMarketCap API Request ---
   String url = "/v1/cryptocurrency/quotes/latest?symbol=";
-  int counter = sizeof(coinSubsribe) / sizeof(coinSubsribe[0]);
+  int counter = sizeof(Coin::coinSubsribe) / sizeof(Coin::coinSubsribe[0]);
   for (int i = 0; i < counter; ++i) {
-    url += coinSubsribe[i].name;
+    url += Coin::coinSubsribe[i].name;
     if (i != counter - 1) {
       url += ",";
     }
   }
   url += "&convert=USD";
 
-  client.setCACert(CoinMarketCapApiRootCA);
+  Coin::client.setCACert(CoinMarketCapApiRootCA);
 
-  if (client.connect(
+  if (Coin::client.connect(
           TimeConfig::COINMARKETCAP_API_HOST,
           443)) // Use client and https, and url.c_str() for std::string
   {
-    client.println("GET " + url + " HTTP/1.1");
-    client.println("Host: " + String(TimeConfig::COINMARKETCAP_API_HOST));
-    client.println("User-Agent: arduino/1.0.0");
-    client.println("Accepts: application/json");
-    client.print("X-CMC_PRO_API_KEY: ");
-    client.println(APIKeys::COINMARKETCAP);
-    client.println();
+    Coin::client.println("GET " + url + " HTTP/1.1");
+    Coin::client.println("Host: " + String(TimeConfig::COINMARKETCAP_API_HOST));
+    Coin::client.println("User-Agent: arduino/1.0.0");
+    Coin::client.println("Accepts: application/json");
+    Coin::client.print("X-CMC_PRO_API_KEY: ");
+    Coin::client.println(APIKeys::COINMARKETCAP);
+    Coin::client.println();
 
     uint32_t now = millis();
     while (millis() - now < 3000) // Timeout for data reception
     {
-      while (client.available()) {
-        char c = client.read();
+          while (Coin::client.available()) {
+      char c = Coin::client.read();
         if (!findHeaders) {
           if (c == '{') {
             findHeaders = true;
-            httpBody = c; // Start capturing body from '{'
+            Coin::httpBody = c; // Start capturing body from '{'
           }
         } else {
           if (c == '\r') // Stop reading at the end of the JSON body (assuming
@@ -106,17 +100,17 @@ static void coinUpdateTask(
           {
             break;
           } else {
-            httpBody += c; // Append to the body
+            Coin::httpBody += c; // Append to the body
           }
         }
         delay(1);
       }
     }
-    client.stop();
-    Serial.println(httpBody); // Print the received JSON body (for debugging)
+    Coin::client.stop();
+    Serial.println(Coin::httpBody); // Print the received JSON body (for debugging)
 
     // --- JSON Parsing ---
-    root = cJSON_Parse(httpBody.c_str());
+    root = cJSON_Parse(Coin::httpBody.c_str());
     if (root != nullptr) // Check for null after parsing
     {
       cJSON *data = cJSON_GetObjectItem(root, "data");
@@ -137,8 +131,8 @@ static void coinUpdateTask(
                     cJSON_GetObjectItem(currencyUsd, "percent_change_24h");
 
                 if (price != nullptr && percent_change_24h != nullptr) {
-                  coinApi[i].price_usd = price->valuedouble;
-                  coinApi[i].percent_change_24h =
+                  Coin::coinApi[i].price_usd = price->valuedouble;
+                  Coin::coinApi[i].percent_change_24h =
                       percent_change_24h->valuedouble;
 
                   Serial.print(
@@ -147,14 +141,14 @@ static void coinUpdateTask(
                   Serial.print(":");
                   Serial.print("\t");
                   Serial.print("Price:");
-                  Serial.println(coinApi[i].price_usd);
+                  Serial.println(Coin::coinApi[i].price_usd);
                   Serial.print("\t");
                   Serial.print("24H Change:");
-                  Serial.println(coinApi[i].percent_change_24h);
+                  Serial.println(Coin::coinApi[i].percent_change_24h);
 
-                  lv_msg_send(
-                      MessageIDs::COIN_MSG_ID,
-                      &coinApi[i]); // Send coin data via lv_msg for each coin
+                  // TODO: Replace with direct callback or event system
+                  // For now, just log the coin data
+                  Serial.println("Coin data updated successfully");
                   done = true;
                 } else {
                   Serial.println("Error parsing price or percent_change_24h");

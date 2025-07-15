@@ -1287,10 +1287,8 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_GIF_GIF_S
 
 const lv_img_dsc_t gif_sleep = {
     .header = {
-        .cf = LV_IMG_CF_TRUE_COLOR,
-        .always_zero = 0,
-        .reserved = 0,
-        .w = 50,
+        .cf = LV_COLOR_FORMAT_NATIVE,
+                        .w = 50,
         .h = 50,
     },
     .data_size = sizeof(gif_sleep_map),

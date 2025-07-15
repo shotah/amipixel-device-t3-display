@@ -373,11 +373,11 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_ICON_SUN 
 // clang-format on
 
 const lv_img_dsc_t icon_sun = {
-    .header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA,
-    .header.always_zero = 0,
-    .header.reserved = 0,
-    .header.w = 84,
-    .header.h = 84,
-    .data_size = 7056 * LV_IMG_PX_SIZE_ALPHA_BYTE,
+    .header = {
+        .cf = LV_COLOR_FORMAT_NATIVE_WITH_ALPHA,
+        .w = 84,
+        .h = 84
+    },
+    .data_size = 7056 * 4,
     .data = icon_sun_map,
 };

@@ -205,11 +205,11 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_ICON_HUMI
 // clang-format on
 
 const lv_img_dsc_t icon_humidity = {
-    .header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA,
-    .header.always_zero = 0,
-    .header.reserved = 0,
-    .header.w = 42,
-    .header.h = 42,
-    .data_size = 1764 * LV_IMG_PX_SIZE_ALPHA_BYTE,
+    .header = {
+        .cf = LV_COLOR_FORMAT_NATIVE_WITH_ALPHA,
+        .w = 42,
+        .h = 42
+    },
+    .data_size = 1764 * 4,
     .data = icon_humidity_map,
 };

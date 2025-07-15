@@ -254,11 +254,11 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_ICON_RAM 
 // clang-format on
 
 const lv_img_dsc_t icon_ram = {
-    .header.cf = LV_IMG_CF_TRUE_COLOR,
-    .header.always_zero = 0,
-    .header.reserved = 0,
-    .header.w = 54,
-    .header.h = 54,
-    .data_size = 2916 * LV_COLOR_SIZE / 8,
+    .header = {
+        .cf = LV_COLOR_FORMAT_NATIVE,
+        .w = 54,
+        .h = 54
+    },
+    .data_size = 2916 * 4,
     .data = icon_ram_map,
 };

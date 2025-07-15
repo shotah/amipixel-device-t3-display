@@ -28,6 +28,39 @@ namespace WiFiModule
   void startWiFiAP();
   String scanWiFiNetworks();
 
+
+  // Storage for registered callbacks
+  static wifi_event_callback_t wifi_connected_callbacks[5] = {nullptr};  // Support up to 5 callbacks
+  static wifi_event_callback_t wifi_disconnected_callbacks[5] = {nullptr};
+  static int connected_callback_count = 0;
+  static int disconnected_callback_count = 0;
+
+  // Function to call all registered connected callbacks
+  static void call_connected_callbacks() {
+      Serial.printf("[WiFi] Calling %d connected callbacks...\n", connected_callback_count);
+      for (int i = 0; i < connected_callback_count; i++) {
+          if (wifi_connected_callbacks[i] != nullptr) {
+              Serial.printf("[WiFi] Calling connected callback #%d\n", i + 1);
+              wifi_connected_callbacks[i]();
+          }
+      }
+      Serial.println("[WiFi] All connected callbacks completed");
+  }
+
+  // Function to call all registered disconnected callbacks
+  static void call_disconnected_callbacks() {
+      Serial.printf("[WiFi] Calling %d disconnected callbacks...\n", disconnected_callback_count);
+      for (int i = 0; i < disconnected_callback_count; i++) {
+          if (wifi_disconnected_callbacks[i] != nullptr) {
+              Serial.printf("[WiFi] Calling disconnected callback #%d\n", i + 1);
+              wifi_disconnected_callbacks[i]();
+          }
+      }
+      Serial.println("[WiFi] All disconnected callbacks completed");
+  }
+
+
+
   void setupWiFi()
   {
     Serial.println("WiFi Module Setup Started.");
@@ -61,6 +94,7 @@ namespace WiFiModule
           "No saved WiFi credentials. Starting AP mode for configuration.");
       startWiFiAP();
     }
+    
     wifi_setup_done = true;
     Serial.println(
         "WiFi Module Setup Done. Connecting will be attempted elsewhere.");
@@ -169,6 +203,7 @@ namespace WiFiModule
 
   bool connectToWiFi(const char *ssid, const char *password)
   {
+    
     Serial.println("Connecting to WiFi...");
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
@@ -211,6 +246,8 @@ namespace WiFiModule
     case WIFI_EVENT_STA_DISCONNECTED:
       wifi_connected = false;
       Serial.println("[WiFi-event] STA Disconnected");
+      // Call registered callbacks when WiFi disconnects
+      call_disconnected_callbacks();
       Serial.println("Attempting to reconnect in Station mode...");
       preferences.begin("wifi-config", false);
       savedSSID = preferences.getString("ssid", "");
@@ -226,10 +263,14 @@ namespace WiFiModule
       Serial.print("[WiFi-event] STA Got IP: ");
       Serial.println(WiFi.localIP());
       wifi_connected = true;
+      // Call registered callbacks when WiFi connects
+      call_connected_callbacks();
       break;
     case ARDUINO_EVENT_WIFI_STA_LOST_IP:
       wifi_connected = false;
       Serial.println("[WiFi-event] STA Lost IP");
+      // Call registered callbacks when WiFi disconnects
+      call_disconnected_callbacks();
       break;
     case WIFI_EVENT_AP_START:
       Serial.println("[WiFi-event] AP Started");
@@ -258,4 +299,28 @@ namespace WiFiModule
     Serial.println();
   };
 
+
+
 } // namespace WiFiModule
+
+// Callback registration functions (outside namespace for global access)
+
+// Function to register WiFi connected callback
+void register_wifi_connected_callback(wifi_event_callback_t callback) {
+    if (WiFiModule::connected_callback_count < 5 && callback != nullptr) {
+        WiFiModule::wifi_connected_callbacks[WiFiModule::connected_callback_count++] = callback;
+        Serial.printf("[WiFi] Registered connected callback #%d\n", WiFiModule::connected_callback_count);
+    } else {
+        Serial.println("[WiFi] ERROR: Cannot register more connected callbacks or callback is null");
+    }
+}
+
+// Function to register WiFi disconnected callback  
+void register_wifi_disconnected_callback(wifi_event_callback_t callback) {
+    if (WiFiModule::disconnected_callback_count < 5 && callback != nullptr) {
+        WiFiModule::wifi_disconnected_callbacks[WiFiModule::disconnected_callback_count++] = callback;
+        Serial.printf("[WiFi] Registered disconnected callback #%d\n", WiFiModule::disconnected_callback_count);
+    } else {
+        Serial.println("[WiFi] ERROR: Cannot register more disconnected callbacks or callback is null");
+    }
+}

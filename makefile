@@ -11,7 +11,7 @@ PLATFORMIO_CMD = pio                 # Command for PlatformIO CLI (usually 'pio'
 
 # --- Targets ---
 
-.PHONY: all build upload clean monitor py-pio-install deploy test compdb uploadfs deployfs quick generate-stick-figures
+.PHONY: all build upload clean clean-libs clean-all monitor py-pio-install deploy test compdb uploadfs deployfs quick generate-stick-figures
 
 all: build
 
@@ -34,6 +34,15 @@ deployfs: upload uploadfs
 clean:
 	@echo "Cleaning build artifacts (environment: $(PROJECT_ENV))"
 	@$(PLATFORMIO_CMD) run -t clean -e $(PROJECT_ENV)
+
+clean-libs:
+	@echo "Purging downloaded libraries (.pio/libdeps)"
+	@$(PLATFORMIO_CMD) run -t clean -e $(PROJECT_ENV)
+	@if exist .pio\libdeps rmdir /s /q .pio\libdeps
+	@echo "Library cache cleared. Next build will re-download libraries."
+
+clean-all: clean clean-libs
+	@echo "Complete clean: build artifacts and libraries purged"
 
 monitor:
 	@echo "Starting Serial Monitor (environment: $(PROJECT_ENV))"
@@ -81,11 +90,18 @@ help:
 	@echo "  all            - Builds the project (default target)"
 	@echo "  build          - Builds the project for the specified environment"
 	@echo "  upload         - Uploads the firmware to the device"
+	@echo "  uploadfs       - Uploads the filesystem (SPIFFS) to the device"
+	@echo "  deployfs       - Uploads both firmware and filesystem"
 	@echo "  clean          - Cleans build artifacts"
+	@echo "  clean-libs     - Purges downloaded libraries (.pio/libdeps)"
+	@echo "  clean-all      - Complete clean: build artifacts and libraries"
 	@echo "  monitor        - Starts the Serial Monitor"
+	@echo "  deploy         - Clean, build, upload, and monitor"
+	@echo "  quick          - Generate stick figures, build, and upload"
+	@echo "  test           - Run unit tests"
 	@echo "  py-pio-install - Installs PlatformIO CLI using Python pip"
-	@echo "  clang-format   - Formats the source files using clang-format"
-	@echo "  clang-tidy     - Lints the source files using clang-tidy"
+	@echo "  format         - Formats the source files using clang-format"
+	@echo "  tidy           - Lints the source files using clang-tidy"
 	@echo ""
 	@echo "Variables:"
 	@echo "  PROJECT_ENV    - PlatformIO environment (default: $(PROJECT_ENV))"
@@ -96,9 +112,11 @@ help:
 	@echo "Usage Examples:"
 	@echo "  make build                  # Build for default environment"
 	@echo "  make upload                 # Upload for default environment"
+	@echo "  make clean-libs             # Purge library cache and force re-download"
+	@echo "  make clean-all              # Complete clean including libraries"
 	@echo "  make clean PROJECT_ENV=esp32dev    # Clean for 'esp32dev' environment"
 	@echo "  make monitor                # Start serial monitor"
 	@echo "  make py-pio-install        # Show PlatformIO CLI install command (Python pip)"
-	@echo "  make clang-format           # Format source files using clang-format"
-	@echo "  make clang-tidy             # Lint source files using clang-tidy"
+	@echo "  make format                 # Format source files using clang-format"
+	@echo "  make tidy                   # Lint source files using clang-tidy"
 	@echo "  make help                   # Show this help message"

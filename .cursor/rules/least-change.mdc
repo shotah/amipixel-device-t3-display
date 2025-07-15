@@ -1,0 +1,42 @@
+---
+alwaysApply: true
+---
+
+- Revert changes that did not solve the issue.
+- Never assume something is fixed until tested
+- Follow the principle of least change
+- When in doubt ask before making changes
+- prefer library imports over writing it.
+
+---
+name: platformio-best-practices.mdc
+description: Best practices for PlatformIO projects and configurations
+globs: **/*.{cpp,h,ini}
+---
+
+- Use the `platformio.ini` file to manage dependencies and environment settings effectively.
+- Organize your project structure with separate folders for source code, libraries, and configuration files.
+- Utilize PlatformIO's built-in testing framework to ensure code reliability.
+- Keep libraries updated to leverage the latest features and security patches.
+
+---
+name: esp32s3-best-practices.mdc
+description: Best practices for ESP32-S3 development
+globs: **/*.{cpp,h}
+---
+
+- Use the ESP-IDF framework for better performance and access to advanced features.
+- Optimize power consumption by using deep sleep modes when the device is idle.
+- Implement proper error handling and logging to troubleshoot issues effectively.
+- Leverage hardware acceleration features for tasks like encryption and signal processing.
+
+---
+name: cpp-best-practices.mdc
+description: C++ coding standards and best practices
+globs: **/*.{cpp,h}
+---
+
+- Follow the RAII (Resource Acquisition Is Initialization) principle to manage resources effectively.
+- Use smart pointers (e.g., `std::unique_ptr`, `std::shared_ptr`) to avoid memory leaks.
+- Prefer `const` and `constexpr` for variables and functions where applicable to enhance performance.
+- Implement proper exception handling to maintain program stability and reliability.

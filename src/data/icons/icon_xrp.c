@@ -293,11 +293,11 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_ICON_XRP 
 // clang-format on
 
 const lv_img_dsc_t icon_xrp = {
-    .header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA,
-    .header.always_zero = 0,
-    .header.reserved = 0,
-    .header.w = 64,
-    .header.h = 64,
-    .data_size = 4096 * LV_IMG_PX_SIZE_ALPHA_BYTE,
+    .header = {
+        .cf = LV_COLOR_FORMAT_NATIVE_WITH_ALPHA,
+        .w = 64,
+        .h = 64
+    },
+    .data_size = 4096 * 4,
     .data = icon_xrp_map,
 };

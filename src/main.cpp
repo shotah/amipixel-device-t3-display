@@ -77,6 +77,9 @@ void setup()
   // Initialize and show the GIF UI
   ui_init();
 
+  // Check PSRAM configuration to debug memory issues
+  // check_psram_config();  // Commented out for simple debugging
+
   // --- Initialize Filesystem using FSHandler ---
   if (FSHandler::setupFS())
   {

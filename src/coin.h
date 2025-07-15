@@ -29,6 +29,7 @@ struct CoinApiData // Renamed struct for consistency
 };
 
 void setupCoin();              // Setup function for the coin module
+void onWifiConnected();        // Called when WiFi connects (replaces messaging)
 extern CoinApiData coinApi[4]; // Declaration of the global coinApi array
                                // instance (for 4 coins, adjust size if needed)
 

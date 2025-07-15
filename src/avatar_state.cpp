@@ -1,144 +1,169 @@
 #include "avatar_state.h"
-#include "nvs_flash.h" // For ESP32 Non-Volatile Storage (NVS)
-#include "esp_log.h"   // For logging (optional)
+#include <Arduino.h>     // For Serial.printf/println
+// Removed: #include "esp_log.h"  // Not compatible with Windows development
+#include "nvs_flash.h"
+#include "nvs.h"
 #include <string.h>    // For string manipulation
 
-static const char *TAG = "AVATAR_STATE"; // Tag for ESP-IDF logging
-static const char *NAMESPACE = "avatar_data";
-static const char *KEY_HUNGER = "hunger";
-static const char *KEY_BOREDOM = "boredom";
-static const char *KEY_HAPPINESS = "happiness";
-static const char *KEY_SLEEPING = "sleeping";
-static const char *KEY_NAME = "name";
+// Removed TAG since we're using Serial.println now
+// Removed unused constants - using hardcoded strings now
 
 // Function to initialize the avatar's state
 void avatar_state_init(avatar_state_t *state)
 {
-    state->hunger = 100;   // Initial full value
-    state->boredom = 50;   // Initial medium boredom
-    state->happiness = 75; // Initial good mood
+    if (state == NULL)
+        return;
+
+    state->hunger = 50;
+    state->boredom = 30;
+    state->happiness = 70;
     state->is_sleeping = false;
-    strcpy(state->name, "Ami"); // Default name
-    ESP_LOGI(TAG, "Avatar state initialized with defaults.");
+    strcpy(state->name, "Pet");
+    
+    Serial.println("[AVATAR] Avatar state initialized with defaults.");
 }
 
 // Function to save the avatar's state to NVS
-bool avatar_state_save(const avatar_state_t *state)
+void avatar_state_save(avatar_state_t *state)
 {
-    esp_err_t err;
+    if (state == NULL)
+        return;
+
     nvs_handle_t nvs_handle;
+    esp_err_t err;
 
-    err = nvs_open(NAMESPACE, NVS_READWRITE, &nvs_handle);
+    err = nvs_open("avatar", NVS_READWRITE, &nvs_handle);
     if (err != ESP_OK)
     {
-        ESP_LOGE(TAG, "Error opening NVS: %s", esp_err_to_name(err));
-        return false;
+        Serial.printf("[AVATAR] Error opening NVS: %s\n", esp_err_to_name(err));
+        return;
     }
 
-    err = nvs_set_u8(nvs_handle, KEY_HUNGER, state->hunger);
+    err = nvs_set_i32(nvs_handle, "hunger", state->hunger);
     if (err != ESP_OK)
     {
-        ESP_LOGE(TAG, "Error saving hunger to NVS: %s", esp_err_to_name(err));
+        Serial.printf("[AVATAR] Error saving hunger to NVS: %s\n", esp_err_to_name(err));
         nvs_close(nvs_handle);
-        return false;
+        return;
     }
 
-    err = nvs_set_u8(nvs_handle, KEY_BOREDOM, state->boredom);
+    err = nvs_set_i32(nvs_handle, "boredom", state->boredom);
     if (err != ESP_OK)
     {
-        ESP_LOGE(TAG, "Error saving boredom to NVS: %s", esp_err_to_name(err));
+        Serial.printf("[AVATAR] Error saving boredom to NVS: %s\n", esp_err_to_name(err));
         nvs_close(nvs_handle);
-        return false;
+        return;
     }
 
-    err = nvs_set_u8(nvs_handle, KEY_HAPPINESS, state->happiness);
+    err = nvs_set_i32(nvs_handle, "happiness", state->happiness);
     if (err != ESP_OK)
     {
-        ESP_LOGE(TAG, "Error saving happiness to NVS: %s", esp_err_to_name(err));
+        Serial.printf("[AVATAR] Error saving happiness to NVS: %s\n", esp_err_to_name(err));
         nvs_close(nvs_handle);
-        return false;
+        return;
     }
 
-    err = nvs_set_u8(nvs_handle, KEY_SLEEPING, state->is_sleeping);
+    err = nvs_set_u8(nvs_handle, "sleeping", state->is_sleeping ? 1 : 0);
     if (err != ESP_OK)
     {
-        ESP_LOGE(TAG, "Error saving sleeping state to NVS: %s", esp_err_to_name(err));
+        Serial.printf("[AVATAR] Error saving sleeping state to NVS: %s\n", esp_err_to_name(err));
         nvs_close(nvs_handle);
-        return false;
+        return;
     }
 
-    err = nvs_set_str(nvs_handle, KEY_NAME, state->name);
+    err = nvs_set_str(nvs_handle, "name", state->name);
     if (err != ESP_OK)
     {
-        ESP_LOGE(TAG, "Error saving name to NVS: %s", esp_err_to_name(err));
+        Serial.printf("[AVATAR] Error saving name to NVS: %s\n", esp_err_to_name(err));
         nvs_close(nvs_handle);
-        return false;
+        return;
     }
 
     err = nvs_commit(nvs_handle);
     if (err != ESP_OK)
     {
-        ESP_LOGE(TAG, "Error committing NVS: %s", esp_err_to_name(err));
+        Serial.printf("[AVATAR] Error committing NVS: %s\n", esp_err_to_name(err));
         nvs_close(nvs_handle);
-        return false;
+        return;
     }
 
     nvs_close(nvs_handle);
-    ESP_LOGI(TAG, "Avatar state saved to NVS.");
-    return true;
+    Serial.println("[AVATAR] Avatar state saved to NVS.");
 }
 
 // Function to load the avatar's state from NVS
 bool avatar_state_load(avatar_state_t *state)
 {
-    esp_err_t err;
-    nvs_handle_t nvs_handle;
+    if (state == NULL)
+        return false;
 
-    err = nvs_open(NAMESPACE, NVS_READONLY, &nvs_handle);
+    nvs_handle_t nvs_handle;
+    esp_err_t err;
+
+    err = nvs_open("avatar", NVS_READONLY, &nvs_handle);
     if (err != ESP_OK)
     {
-        ESP_LOGE(TAG, "Error opening NVS: %s", esp_err_to_name(err));
+        Serial.printf("[AVATAR] Error opening NVS: %s\n", esp_err_to_name(err));
         return false;
     }
 
-    err = nvs_get_u8(nvs_handle, KEY_HUNGER, &state->hunger);
-    if (err != ESP_OK && err != ESP_ERR_NVS_NO_FREE_PAGES && err != ESP_ERR_NVS_NOT_FOUND)
-        ESP_LOGE(TAG, "Error loading hunger from NVS: %s", esp_err_to_name(err));
-
-    err = nvs_get_u8(nvs_handle, KEY_BOREDOM, &state->boredom);
-    if (err != ESP_OK && err != ESP_ERR_NVS_NO_FREE_PAGES && err != ESP_ERR_NVS_NOT_FOUND)
-        ESP_LOGE(TAG, "Error loading boredom from NVS: %s", esp_err_to_name(err));
-
-    err = nvs_get_u8(nvs_handle, KEY_HAPPINESS, &state->happiness);
-    if (err != ESP_OK && err != ESP_ERR_NVS_NO_FREE_PAGES && err != ESP_ERR_NVS_NOT_FOUND)
-        ESP_LOGE(TAG, "Error loading happiness from NVS: %s", esp_err_to_name(err));
-
-    err = nvs_get_u8(nvs_handle, KEY_SLEEPING, &state->is_sleeping);
-    if (err != ESP_OK && err != ESP_ERR_NVS_NO_FREE_PAGES && err != ESP_ERR_NVS_NOT_FOUND)
-        ESP_LOGE(TAG, "Error loading sleeping state from NVS: %s", esp_err_to_name(err));
-
-    size_t name_len;
-    err = nvs_get_str(nvs_handle, KEY_NAME, NULL, &name_len); // Get required size
-    if (err == ESP_OK)
+    err = nvs_get_i32(nvs_handle, "hunger", &state->hunger);
+    if (err != ESP_OK)
     {
-        if (name_len < sizeof(state->name))
-        {
-            err = nvs_get_str(nvs_handle, KEY_NAME, state->name, &name_len);
-            if (err != ESP_OK)
-                ESP_LOGE(TAG, "Error loading name from NVS: %s", esp_err_to_name(err));
-        }
-        else
-        {
-            ESP_LOGW(TAG, "Name in NVS is too long, using default.");
-            strcpy(state->name, "Ami");
-        }
+        Serial.printf("[AVATAR] Error loading hunger from NVS: %s\n", esp_err_to_name(err));
     }
-    else if (err != ESP_ERR_NVS_NO_FREE_PAGES && err != ESP_ERR_NVS_NOT_FOUND)
+
+    err = nvs_get_i32(nvs_handle, "boredom", &state->boredom);
+    if (err != ESP_OK)
     {
-        ESP_LOGE(TAG, "Error getting name length from NVS: %s", esp_err_to_name(err));
+        Serial.printf("[AVATAR] Error loading boredom from NVS: %s\n", esp_err_to_name(err));
+    }
+
+    err = nvs_get_i32(nvs_handle, "happiness", &state->happiness);
+    if (err != ESP_OK)
+    {
+        Serial.printf("[AVATAR] Error loading happiness from NVS: %s\n", esp_err_to_name(err));
+    }
+
+    uint8_t sleeping;
+    err = nvs_get_u8(nvs_handle, "sleeping", &sleeping);
+    if (err != ESP_OK)
+    {
+        Serial.printf("[AVATAR] Error loading sleeping state from NVS: %s\n", esp_err_to_name(err));
+    }
+    else
+    {
+        state->is_sleeping = (sleeping == 1);
+    }
+
+    // Load name with proper buffer handling
+    size_t required_size = sizeof(state->name);
+    err = nvs_get_str(nvs_handle, "name", state->name, &required_size);
+    if (err == ESP_ERR_NVS_NOT_FOUND)
+    {
+        strcpy(state->name, "Pet");
+    }
+    else if (err != ESP_OK)
+    {
+        Serial.printf("[AVATAR] Error loading name from NVS: %s\n", esp_err_to_name(err));
+        strcpy(state->name, "Pet");
+    }
+    else if (required_size > sizeof(state->name))
+    {
+        Serial.println("[AVATAR] Name in NVS is too long, using default.");
+        strcpy(state->name, "Pet");
+    }
+    else
+    {
+        err = nvs_get_str(nvs_handle, "name", state->name, &required_size);
+        if (err != ESP_OK)
+        {
+            Serial.printf("[AVATAR] Error getting name length from NVS: %s\n", esp_err_to_name(err));
+            strcpy(state->name, "Pet");
+        }
     }
 
     nvs_close(nvs_handle);
-    ESP_LOGI(TAG, "Avatar state loaded from NVS.");
+    Serial.println("[AVATAR] Avatar state loaded from NVS.");
     return true;
 }
